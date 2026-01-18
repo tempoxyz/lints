@@ -1,3 +1,6 @@
+packages:
+  - "."
+
 ignoredBuiltDependencies:
-  - '@ast-grep/cli'
+  - "@ast-grep/cli"
   - esbuild
