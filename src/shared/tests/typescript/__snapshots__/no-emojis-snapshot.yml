@@ -1,0 +1,29 @@
+id: no-emojis
+snapshots:
+  ? |
+    const emoji = "🚀";
+  : fixed: |
+      const emoji = "";
+    labels:
+    - source: 🚀
+      style: primary
+      start: 15
+      end: 19
+  ? |
+    const msg = "Hello 🌍";
+  : fixed: |
+      const msg = "Hello ";
+    labels:
+    - source: Hello 🌍
+      style: primary
+      start: 13
+      end: 23
+  ? |
+    const msg = "Success 🎉";
+  : fixed: |
+      const msg = "Success ";
+    labels:
+    - source: Success 🎉
+      style: primary
+      start: 13
+      end: 25

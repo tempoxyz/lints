@@ -1,0 +1,16 @@
+id: no-leading-whitespace-strings
+valid:
+  - |
+    const msg = "hello";
+  - |
+    const msg = "  indented";
+  - |
+    const msg = "\t\ttabbed";
+  - |
+    const fmt = "{} items";
+
+invalid:
+  - |
+    const msg = " hello";
+  - |
+    const msg = " world";

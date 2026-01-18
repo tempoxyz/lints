@@ -1,0 +1,20 @@
+id: no-leading-whitespace-strings
+snapshots:
+  ? |
+    const msg = " hello";
+  : fixed: |
+      const msg = "hello";
+    labels:
+    - source: ' hello'
+      style: primary
+      start: 13
+      end: 19
+  ? |
+    const msg = " world";
+  : fixed: |
+      const msg = "world";
+    labels:
+    - source: ' world'
+      style: primary
+      start: 13
+      end: 19

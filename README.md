@@ -2,84 +2,106 @@
 
 Shared [ast-grep](https://ast-grep.github.io/) lint rules for Tempo projects.
 
-## Structure
+:warning: This project is under active development :warning:
 
+## Installation
+
+### GitHub Action (Recommended for CI)
+
+```yaml
+name: Lint
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: stripe/tempo-lints@v1
+        with:
+          language: rust  # or 'typescript' or 'all'
 ```
-lints/
-├── shared/          # Rule templates (must be copied to language dirs)
-├── rust/            # Rust-specific rules
-│   ├── rules/
-│   ├── tests/
-│   └── sgconfig.yml
-├── typescript/      # TypeScript-specific rules
-│   ├── rules/
-│   ├── tests/
-│   └── sgconfig.yml
-└── scripts/         # Helper scripts for consumers
-```
 
-## Usage
+**Action Inputs:**
 
-### Vendoring into your project
+| Input | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `language` | ✅ | — | `rust`, `typescript`, or `all` |
+| `path` | | `.` | Path to scan |
+| `fail-on-error` | | `true` | Fail if errors found |
+| `exclude-rules` | | — | Comma-separated rule IDs to skip |
+| `fix` | | `false` | Apply auto-fixes where available |
+| `post-comment` | | `false` | Post results as PR comment |
+| `github-token` | | — | Required if `post-comment: true` |
 
-Copy the relevant language folder into your project:
+### npm / npx
 
 ```bash
-# For a Rust project
-cp -r rust/ /path/to/your-project/.ast-grep/
+# Run directly with npx
+npx @stripe/tempo-lints rust ./src
+npx @stripe/tempo-lints typescript
+npx @stripe/tempo-lints all --json
 
-# For a TypeScript project
-cp -r typescript/ /path/to/your-project/.ast-grep/
+# Or install globally
+npm install -g @stripe/tempo-lints
+tempo-lints rust ./src
 ```
 
-Or use the vendor script:
+### Vendoring (for offline/locked environments)
 
 ```bash
-./scripts/vendor.sh --lang rust --dest /path/to/your-project
+# Using the CLI vendor command (recommended)
+npx @stripe/tempo-lints vendor --lang rust --dest /path/to/your-project
+npx @stripe/tempo-lints vendor --lang typescript --dest /path/to/your-project
+npx @stripe/tempo-lints vendor --lang all --dest /path/to/your-project
 ```
 
-### Running locally
+This copies both language-specific rules and shared rules to `.ast-grep/` and generates an `sgconfig.yml`.
+
+After vendoring, run lints with:
 
 ```bash
-# Test all rules
-make test
-
-# Test specific language
-make test-rust
-make test-typescript
-
-# Scan a directory with rules
-ast-grep scan --config rust/sgconfig.yml /path/to/code
+ast-grep scan --config sgconfig.yml
 ```
 
-## Rules
+## CLI Usage
 
-### Shared Rules (copied to each language)
+```
+tempo-lints <language> [path] [options]
 
-| Rule | Severity | Description |
-|------|----------|-------------|
-| `no-emojis` | error | Bans emoji characters in code |
-| `no-leading-whitespace-strings` | warning | Warns about `" foo"` style strings |
+Arguments:
+  language     Required: rust, typescript, or all
+  path         Path to scan (default: current directory)
 
-### Rust Rules
+Options:
+  --exclude <rules>   Comma-separated list of rules to exclude
+  --json              Output results as JSON
+  --fix               Apply auto-fixes where available
+  --github-action     Output in GitHub Actions format with annotations
+  --help, -h          Show help
+  --version, -v       Show version
 
-| Rule | Severity | Description |
-|------|----------|-------------|
-| `unsafe-needs-safety-comment` | warning | Flags unsafe blocks for review |
-| `no-mem-transmute` | error | Bans `mem::transmute` without justification |
-| `no-unwrap-in-lib` | warning | Bans `.unwrap()` outside test code |
-| `no-dbg-macro` | error | Bans `dbg!()` macro |
-| `tracing-no-format` | warning | Forbids `format!()` inside `tracing::*!()` |
+Examples:
+  tempo-lints rust
+  tempo-lints typescript ./src
+  tempo-lints all --json
+  tempo-lints rust --exclude no-dbg-macro,no-unwrap-in-lib
+  tempo-lints typescript --fix
+  tempo-lints rust --github-action   # For CI with annotations
 
-### TypeScript Rules
+Vendor Subcommand:
+  tempo-lints vendor --lang <language> --dest <path>
 
-| Rule | Severity | Description |
-|------|----------|-------------|
-| `no-console-log` | warning | Bans `console.log` (use structured logging) |
-| `no-explicit-any` | warning | Bans explicit `any` type annotations |
-| `no-non-null-assertion` | warning | Bans `!` non-null assertions |
-| `no-await-in-loop` | warning | Warns about await inside loops |
-| `prefer-const` | hint | Suggests `const` over `let` |
+  Copy lint rules to a destination project for offline/locked usage.
+
+  Options:
+    --lang <language>   Language rules to vendor (rust, typescript, or all)
+    --dest <path>       Destination project path
+
+  Examples:
+    tempo-lints vendor --lang rust --dest ./my-project
+    tempo-lints vendor --lang all --dest /path/to/project
+```
 
 ## Disabling Rules
 
@@ -107,28 +129,39 @@ let emoji2 = "🚀";
 ## Adding New Rules
 
 1. Create the rule YAML in the appropriate `rules/` directory
-2. Add test cases in `tests/<rule-id>-test.yml`
-3. Run `make test` to generate snapshots
-4. Document in this README
+2. Add test cases in `rules/<language>/tests/<rule-id>-test.yml`
+3. Run `npm test` to generate snapshots
 
-## CI Integration
+## Development
 
-Example GitHub Actions job:
+```bash
+# Install dependencies
+npm install
 
-```yaml
-ast-grep:
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v4
-    - name: Install ast-grep
-      run: npm install -g @ast-grep/cli
-    - name: Run ast-grep
-      run: ast-grep scan --config .ast-grep/sgconfig.yml
+# Test all rules
+npm test
+
+# Test specific language
+npm run test:rust
+npm run test:typescript
+npm run test:shared-rules
+
+# Update snapshots
+npm run test:update-snapshots
+
+# Typecheck
+npm run typecheck
+
+# Lint & format
+npm run check
+
+# Scan a directory manually
+ast-grep scan --config rules/rust/sgconfig.yml /path/to/code
 ```
 
 ## Contributing
 
 1. Fork this repo
 2. Add or modify rules
-3. Run `make test` to verify
+3. Run `npm test` to verify
 4. Open a PR with description of the rule and rationale

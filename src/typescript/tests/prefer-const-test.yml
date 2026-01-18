@@ -1,0 +1,16 @@
+id: prefer-const
+valid:
+  - |
+    const x = 1;
+  - |
+    const name = "Alice";
+  - |
+    const arr = [1, 2, 3];
+
+invalid:
+  - |
+    let x = 1;
+  - |
+    let name = "Alice";
+  - |
+    let config = { debug: true };

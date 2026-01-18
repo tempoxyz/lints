@@ -1,0 +1,18 @@
+id: tracing-no-format
+valid:
+  - |
+    tracing::info!(user = ?user, "User logged in");
+  - |
+    tracing::debug!(count = count, "Processing items");
+  - |
+    info!("Simple message");
+
+invalid:
+  - |
+    tracing::info!("User {}", format!("{:?}", user));
+  - |
+    tracing::debug!("Debug: {}", format!("{}", value));
+  - |
+    info!("Value: {}", format!("{:?}", x));
+  - |
+    warn!("Warning: {}", format!("{}", msg));
