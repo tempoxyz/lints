@@ -81,13 +81,13 @@ export function getRuleDirs(language: Language, packageRoot: string = PACKAGE_RO
 	const dirs: string[] = []
 
 	if (language === LANG.RUST || language === LANG.ALL) {
-		dirs.push(path.join(packageRoot, 'rules', 'shared', LANG.RUST))
-		dirs.push(path.join(packageRoot, 'rules', LANG.RUST))
+		dirs.push(path.join(packageRoot, 'src', 'shared', LANG.RUST))
+		dirs.push(path.join(packageRoot, 'src', LANG.RUST, 'rules'))
 	}
 
 	if (language === LANG.TYPESCRIPT || language === LANG.ALL) {
-		dirs.push(path.join(packageRoot, 'rules', 'shared', LANG.TYPESCRIPT))
-		dirs.push(path.join(packageRoot, 'rules', LANG.TYPESCRIPT))
+		dirs.push(path.join(packageRoot, 'src', 'shared', LANG.TYPESCRIPT))
+		dirs.push(path.join(packageRoot, 'src', LANG.TYPESCRIPT, 'rules'))
 	}
 
 	return dirs

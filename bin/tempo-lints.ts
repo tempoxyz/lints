@@ -219,32 +219,35 @@ function runVendor(options: VendorOptions): void {
 	// Copy shared rules
 	if (language === LANG.RUST || language === LANG.ALL) {
 		copyDir(
-			path.join(PACKAGE_ROOT, 'rules', 'shared', LANG.RUST),
+			path.join(PACKAGE_ROOT, 'src', 'shared', LANG.RUST),
 			path.join(astGrepDir, 'rules', 'shared', LANG.RUST),
 		)
-		console.log(`Copied rules/shared/${LANG.RUST}/`)
+		console.log(`Copied src/shared/${LANG.RUST}/`)
 	}
 
 	if (language === LANG.TYPESCRIPT || language === LANG.ALL) {
 		copyDir(
-			path.join(PACKAGE_ROOT, 'rules', 'shared', LANG.TYPESCRIPT),
+			path.join(PACKAGE_ROOT, 'src', 'shared', LANG.TYPESCRIPT),
 			path.join(astGrepDir, 'rules', 'shared', LANG.TYPESCRIPT),
 		)
-		console.log(`Copied rules/shared/${LANG.TYPESCRIPT}/`)
+		console.log(`Copied src/shared/${LANG.TYPESCRIPT}/`)
 	}
 
 	// Copy language-specific rules
 	if (language === LANG.RUST || language === LANG.ALL) {
-		copyDir(path.join(PACKAGE_ROOT, 'rules', LANG.RUST), path.join(astGrepDir, 'rules', LANG.RUST))
-		console.log(`Copied rules/${LANG.RUST}/`)
+		copyDir(
+			path.join(PACKAGE_ROOT, 'src', LANG.RUST, 'rules'),
+			path.join(astGrepDir, 'rules', LANG.RUST),
+		)
+		console.log(`Copied src/${LANG.RUST}/rules/`)
 	}
 
 	if (language === LANG.TYPESCRIPT || language === LANG.ALL) {
 		copyDir(
-			path.join(PACKAGE_ROOT, 'rules', LANG.TYPESCRIPT),
+			path.join(PACKAGE_ROOT, 'src', LANG.TYPESCRIPT, 'rules'),
 			path.join(astGrepDir, 'rules', LANG.TYPESCRIPT),
 		)
-		console.log(`Copied rules/${LANG.TYPESCRIPT}/`)
+		console.log(`Copied src/${LANG.TYPESCRIPT}/rules/`)
 	}
 
 	// Create sgconfig.yml using relative paths for vendored rules

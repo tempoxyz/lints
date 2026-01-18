@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const rootDir = join(__dirname, '..')
-const sharedRulesDir = join(rootDir, 'rules', 'shared')
+const sharedRulesDir = join(rootDir, 'src', 'shared')
 
 const SUPPORTED_LANGUAGES = ['rust', 'typescript'] as const
 
