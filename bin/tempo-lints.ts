@@ -240,7 +240,10 @@ function runVendor(options: VendorOptions): void {
 	}
 
 	if (language === LANG.TYPESCRIPT || language === LANG.ALL) {
-		copyDir(path.join(PACKAGE_ROOT, 'rules', LANG.TYPESCRIPT), path.join(astGrepDir, 'rules', LANG.TYPESCRIPT))
+		copyDir(
+			path.join(PACKAGE_ROOT, 'rules', LANG.TYPESCRIPT),
+			path.join(astGrepDir, 'rules', LANG.TYPESCRIPT),
+		)
 		console.log(`Copied rules/${LANG.TYPESCRIPT}/`)
 	}
 
