@@ -1,0 +1,18 @@
+id: no-non-null-assertion
+valid:
+  - |
+    const value = obj?.prop;
+  - |
+    const result = data ?? "default";
+  - |
+    if (user !== null) { process(user); }
+  - |
+    function foo(x: string | null): void {}
+
+invalid:
+  - |
+    const value = obj!.prop;
+  - |
+    process(data!);
+  - |
+    const result = getValue()!;

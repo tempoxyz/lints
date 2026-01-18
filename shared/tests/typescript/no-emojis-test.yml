@@ -1,0 +1,16 @@
+id: no-emojis
+valid:
+  - |
+    const msg = "Hello world";
+  - |
+    const msg = "Success!";
+  - |
+    const msg = "Error: something went wrong";
+
+invalid:
+  - |
+    const msg = "Hello 🌍";
+  - |
+    const msg = "Success 🎉";
+  - |
+    const emoji = "🚀";

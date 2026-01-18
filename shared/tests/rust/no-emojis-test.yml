@@ -1,0 +1,16 @@
+id: no-emojis
+valid:
+  - |
+    let msg = "Hello world";
+  - |
+    let msg = "Success!";
+  - |
+    let msg = "Error: something went wrong";
+
+invalid:
+  - |
+    let msg = "Hello 🌍";
+  - |
+    let msg = "Success 🎉";
+  - |
+    let emoji = "🚀";
