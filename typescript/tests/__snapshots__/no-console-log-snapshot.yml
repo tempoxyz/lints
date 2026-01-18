@@ -1,0 +1,16 @@
+id: no-console-log
+snapshots:
+  ? |
+    console.log("debug");
+  : labels:
+    - source: console.log("debug")
+      style: primary
+      start: 0
+      end: 20
+  ? |
+    console.log(user, data);
+  : labels:
+    - source: console.log(user, data)
+      style: primary
+      start: 0
+      end: 23

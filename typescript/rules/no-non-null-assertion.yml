@@ -1,0 +1,21 @@
+id: no-non-null-assertion
+message: "Avoid non-null assertion (!). Use proper null checking."
+severity: warning
+language: typescript
+note: |
+  The non-null assertion operator (!) tells TypeScript to trust you,
+  but it can hide bugs if the value is actually null/undefined.
+  
+  Prefer:
+  - Optional chaining: `obj?.prop`
+  - Nullish coalescing: `value ?? default`
+  - Explicit null checks: `if (value !== null)`
+  - Type guards
+  
+  To disable this rule:
+  - Line: add `// ast-grep-ignore: no-non-null-assertion` on the line before
+rule:
+  pattern: $EXPR!
+  not:
+    inside:
+      kind: type_annotation

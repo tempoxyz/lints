@@ -1,0 +1,12 @@
+id: no-dbg-macro
+valid:
+  - |
+    tracing::debug!(value = ?x, "debugging");
+  - |
+    println!("{:?}", x);
+
+invalid:
+  - |
+    dbg!(x);
+  - |
+    dbg!(x, y, z);

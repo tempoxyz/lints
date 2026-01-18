@@ -1,0 +1,14 @@
+id: unsafe-needs-safety-comment
+valid:
+  - |
+    fn foo() {
+        let x = 1;
+    }
+
+invalid:
+  - |
+    fn foo() {
+        unsafe { *ptr }
+    }
+  - |
+    unsafe { std::ptr::read(ptr) }

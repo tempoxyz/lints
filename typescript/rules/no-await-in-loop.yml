@@ -1,0 +1,33 @@
+id: no-await-in-loop
+message: "Avoid await inside loops. Consider Promise.all() for parallel execution."
+severity: warning
+language: typescript
+note: |
+  Using await in a loop executes promises sequentially, which is often
+  slower than running them in parallel.
+  
+  Bad:
+  ```typescript
+  for (const item of items) {
+    await processItem(item);  // Sequential - slow!
+  }
+  ```
+  
+  Good:
+  ```typescript
+  await Promise.all(items.map(item => processItem(item)));  // Parallel
+  ```
+  
+  If sequential execution is intentional (e.g., rate limiting),
+  disable this rule with a comment explaining why.
+  
+  To disable this rule:
+  - Line: add `// ast-grep-ignore: no-await-in-loop` on the line before
+rule:
+  kind: await_expression
+  inside:
+    stopBy: end
+    any:
+      - kind: for_statement
+      - kind: for_in_statement
+      - kind: while_statement

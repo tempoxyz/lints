@@ -1,0 +1,20 @@
+id: no-mem-transmute
+message: "std::mem::transmute is dangerous. Use safer alternatives or add justification."
+severity: error
+language: rust
+note: |
+  `mem::transmute` bypasses Rust's type system and is a common source of UB.
+  
+  Prefer safer alternatives:
+  - `as` casts for numeric conversions
+  - `from_ne_bytes`/`to_ne_bytes` for integer↔bytes
+  - `bytemuck` crate for safe transmutes
+  - `zerocopy` crate for zero-copy parsing
+  
+  If transmute is truly necessary, disable with:
+  - Line: add `// ast-grep-ignore: no-mem-transmute` with justification
+rule:
+  any:
+    - pattern: std::mem::transmute($$$ARGS)
+    - pattern: mem::transmute($$$ARGS)
+    - pattern: transmute($$$ARGS)

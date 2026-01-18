@@ -1,0 +1,12 @@
+id: no-mem-transmute
+valid:
+  - |
+    let x = u32::from_ne_bytes(bytes);
+  - |
+    let y = value as i32;
+
+invalid:
+  - |
+    let x = std::mem::transmute(value);
+  - |
+    let y = mem::transmute(bytes);

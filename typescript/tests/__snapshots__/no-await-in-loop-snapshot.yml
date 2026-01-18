@@ -1,0 +1,34 @@
+id: no-await-in-loop
+snapshots:
+  ? |
+    for (const item of items) {
+      await process(item);
+    }
+  : labels:
+    - source: await process(item)
+      style: primary
+      start: 30
+      end: 49
+    - source: |-
+        for (const item of items) {
+          await process(item);
+        }
+      style: secondary
+      start: 0
+      end: 52
+  ? |
+    while (hasMore) {
+      await fetchNext();
+    }
+  : labels:
+    - source: await fetchNext()
+      style: primary
+      start: 20
+      end: 37
+    - source: |-
+        while (hasMore) {
+          await fetchNext();
+        }
+      style: secondary
+      start: 0
+      end: 40

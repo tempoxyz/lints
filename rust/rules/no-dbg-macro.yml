@@ -1,0 +1,18 @@
+id: no-dbg-macro
+message: "Remove dbg!() macro before committing. Use tracing or proper logging."
+severity: error
+language: rust
+note: |
+  The dbg!() macro is for quick debugging only and should not be committed.
+  It outputs to stderr and is not suitable for production.
+  
+  Use instead:
+  - `tracing::debug!()` for structured logging
+  - `log::debug!()` if using log crate
+  - Remove entirely if not needed
+  
+  To disable this rule:
+  - Line: add `// ast-grep-ignore: no-dbg-macro` on the line before
+rule:
+  pattern: dbg!($$$ARGS)
+fix: $$$ARGS

@@ -1,0 +1,16 @@
+id: no-explicit-any
+snapshots:
+  ? |
+    const x: any = getValue();
+  : labels:
+    - source: any
+      style: primary
+      start: 9
+      end: 12
+  ? |
+    const y = value as any;
+  : labels:
+    - source: value as any
+      style: primary
+      start: 10
+      end: 22

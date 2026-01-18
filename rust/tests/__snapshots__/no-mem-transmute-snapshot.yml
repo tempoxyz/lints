@@ -1,0 +1,16 @@
+id: no-mem-transmute
+snapshots:
+  ? |
+    let x = std::mem::transmute(value);
+  : labels:
+    - source: std::mem::transmute(value)
+      style: primary
+      start: 8
+      end: 34
+  ? |
+    let y = mem::transmute(bytes);
+  : labels:
+    - source: mem::transmute(bytes)
+      style: primary
+      start: 8
+      end: 29

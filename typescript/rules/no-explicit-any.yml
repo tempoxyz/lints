@@ -1,0 +1,19 @@
+id: no-explicit-any
+message: "Avoid explicit 'any' type. Use 'unknown' or proper typing."
+severity: warning
+language: typescript
+note: |
+  `any` disables type checking and defeats the purpose of TypeScript.
+  
+  Prefer:
+  - `unknown` for truly unknown types (requires type narrowing)
+  - Proper interface/type definitions
+  - Generics for flexible typing
+  
+  To disable this rule:
+  - Line: add `// ast-grep-ignore: no-explicit-any` on the line before
+rule:
+  any:
+    - kind: predefined_type
+      regex: "^any$"
+    - pattern: $EXPR as any

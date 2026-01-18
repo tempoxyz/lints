@@ -1,0 +1,12 @@
+id: no-console-log
+valid:
+  - |
+    logger.info("message");
+  - |
+    console.error("error");
+
+invalid:
+  - |
+    console.log("debug");
+  - |
+    console.log(user, data);

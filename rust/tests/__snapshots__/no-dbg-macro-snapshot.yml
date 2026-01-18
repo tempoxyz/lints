@@ -1,0 +1,20 @@
+id: no-dbg-macro
+snapshots:
+  ? |
+    dbg!(x);
+  : fixed: |
+      x;
+    labels:
+    - source: dbg!(x)
+      style: primary
+      start: 0
+      end: 7
+  ? |
+    dbg!(x, y, z);
+  : fixed: |
+      x, y, z;
+    labels:
+    - source: dbg!(x, y, z)
+      style: primary
+      start: 0
+      end: 13

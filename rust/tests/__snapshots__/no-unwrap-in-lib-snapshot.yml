@@ -1,0 +1,16 @@
+id: no-unwrap-in-lib
+snapshots:
+  ? |
+    let x = result.unwrap();
+  : labels:
+    - source: result.unwrap()
+      style: primary
+      start: 8
+      end: 23
+  ? |
+    let y = option.unwrap();
+  : labels:
+    - source: option.unwrap()
+      style: primary
+      start: 8
+      end: 23

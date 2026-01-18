@@ -1,0 +1,25 @@
+id: unsafe-needs-safety-comment
+snapshots:
+  ? |
+    fn foo() {
+        unsafe { *ptr }
+    }
+  : labels:
+    - source: unsafe { *ptr }
+      style: primary
+      start: 15
+      end: 30
+  ? |
+    unsafe { *ptr }
+  : labels:
+    - source: unsafe { *ptr }
+      style: primary
+      start: 0
+      end: 15
+  ? |
+    unsafe { std::ptr::read(ptr) }
+  : labels:
+    - source: unsafe { std::ptr::read(ptr) }
+      style: primary
+      start: 0
+      end: 30

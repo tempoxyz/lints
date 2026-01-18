@@ -1,0 +1,14 @@
+id: no-unwrap-in-lib
+valid:
+  - |
+    let x = result?;
+  - |
+    let y = option.expect("should exist");
+  - |
+    let z = option.unwrap_or_default();
+
+invalid:
+  - |
+    let x = result.unwrap();
+  - |
+    let y = option.unwrap();

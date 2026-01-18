@@ -1,0 +1,18 @@
+id: prefer-const
+message: "Use 'const' instead of 'let' when variable is never reassigned."
+severity: hint
+language: typescript
+note: |
+  `const` signals intent that a variable won't be reassigned.
+  It helps prevent accidental reassignment bugs.
+  
+  Note: This is a simple syntactic check. Use ESLint's prefer-const
+  for more sophisticated analysis.
+  
+  To disable this rule:
+  - Line: add `// ast-grep-ignore: prefer-const` on the line before
+rule:
+  pattern: let $NAME = $VALUE;
+  not:
+    follows:
+      pattern: $NAME = $OTHER

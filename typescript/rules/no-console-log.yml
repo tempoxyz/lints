@@ -1,0 +1,21 @@
+id: no-console-log
+message: "Avoid console.log in production code. Use structured logging instead."
+severity: warning
+language: typescript
+note: |
+  console.log is not suitable for production:
+  - No log levels
+  - No structured data
+  - Cannot be configured/disabled
+  
+  Use a proper logging library instead (pino, winston, etc.)
+  
+  To disable this rule:
+  - Line: add `// ast-grep-ignore: no-console-log` on the line before
+rule:
+  pattern: console.log($$$ARGS)
+ignores:
+  - "**/tests/**"
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+  - "**/scripts/**"

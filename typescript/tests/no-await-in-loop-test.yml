@@ -1,0 +1,16 @@
+id: no-await-in-loop
+valid:
+  - |
+    await Promise.all(items.map(process));
+  - |
+    const results = await fetchAll(items);
+
+invalid:
+  - |
+    for (const item of items) {
+      await process(item);
+    }
+  - |
+    while (hasMore) {
+      await fetchNext();
+    }

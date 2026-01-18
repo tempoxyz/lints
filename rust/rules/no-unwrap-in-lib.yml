@@ -1,0 +1,27 @@
+id: no-unwrap-in-lib
+message: "Avoid .unwrap() in library code. Use proper error handling with ? or .expect() with context."
+severity: warning
+language: rust
+note: |
+  `.unwrap()` panics on None/Err without context, making debugging harder.
+  
+  Prefer:
+  - `?` operator to propagate errors
+  - `.expect("meaningful message")` if panic is intentional
+  - `.unwrap_or()` / `.unwrap_or_default()` for fallbacks
+  - `if let Some(x) = ...` for explicit handling
+  
+  This rule is ignored in test files.
+  
+  To disable this rule:
+  - Line: add `// ast-grep-ignore: no-unwrap-in-lib` on the line before
+rule:
+  pattern: $EXPR.unwrap()
+files:
+  - "**/*.rs"
+ignores:
+  - "**/tests/**"
+  - "**/test_*.rs"
+  - "**/*_test.rs"
+  - "**/benches/**"
+  - "**/examples/**"

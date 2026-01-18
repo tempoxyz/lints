@@ -1,0 +1,22 @@
+id: unsafe-needs-safety-comment
+message: "Unsafe block requires a SAFETY comment explaining why this is safe."
+severity: warning
+language: rust
+note: |
+  All unsafe code should have a `// SAFETY:` comment explaining why
+  the unsafe operation is sound.
+  
+  Good:
+  ```rust
+  // SAFETY: We have verified the pointer is valid and aligned
+  unsafe { *ptr }
+  ```
+  
+  This is a reminder rule - review each unsafe block to ensure it has
+  proper documentation. Some may already have SAFETY comments that
+  ast-grep cannot detect due to formatting.
+  
+  To disable this rule:
+  - Line: add `// ast-grep-ignore: unsafe-needs-safety-comment` on the line before
+rule:
+  kind: unsafe_block

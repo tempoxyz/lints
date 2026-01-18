@@ -1,0 +1,12 @@
+id: no-explicit-any
+valid:
+  - |
+    const x: unknown = getValue();
+  - |
+    function process(data: Data): void {}
+
+invalid:
+  - |
+    const x: any = getValue();
+  - |
+    const y = value as any;

@@ -1,0 +1,33 @@
+id: tracing-no-format
+message: "Avoid format!() inside tracing macros. Use structured fields instead."
+severity: warning
+language: rust
+note: |
+  Using format!() in tracing macros loses structured logging benefits.
+  
+  Bad:
+  ```rust
+  tracing::info!("User {} logged in", format!("{:?}", user));
+  ```
+  
+  Good:
+  ```rust
+  tracing::info!(user = ?user, "User logged in");
+  ```
+  
+  Structured fields enable better log querying and reduce allocations.
+  
+  To disable this rule:
+  - Line: add `// ast-grep-ignore: tracing-no-format` on the line before
+rule:
+  any:
+    - pattern: tracing::info!($$$ARGS, format!($$$FMT))
+    - pattern: tracing::debug!($$$ARGS, format!($$$FMT))
+    - pattern: tracing::warn!($$$ARGS, format!($$$FMT))
+    - pattern: tracing::error!($$$ARGS, format!($$$FMT))
+    - pattern: tracing::trace!($$$ARGS, format!($$$FMT))
+    - pattern: info!($$$ARGS, format!($$$FMT))
+    - pattern: debug!($$$ARGS, format!($$$FMT))
+    - pattern: warn!($$$ARGS, format!($$$FMT))
+    - pattern: error!($$$ARGS, format!($$$FMT))
+    - pattern: trace!($$$ARGS, format!($$$FMT))

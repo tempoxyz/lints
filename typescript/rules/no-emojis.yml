@@ -1,0 +1,17 @@
+id: no-emojis
+message: "Emojis are not allowed in code. Use descriptive text instead."
+severity: error
+language: typescript
+note: |
+  Emojis can cause issues with terminal rendering, log parsing, and accessibility.
+  
+  To disable this rule:
+  - Line: add `// ast-grep-ignore: no-emojis` on the line before
+  - Block: wrap code with `// ast-grep-ignore-start` and `// ast-grep-ignore-end`
+rule:
+  kind: string_fragment
+  pattern: $CONTENT
+  regex: "[\U0001F300-\U0001F9FF\U00002600-\U000026FF\U00002700-\U000027BF\U0001F600-\U0001F64F\U0001F680-\U0001F6FF]"
+ignores:
+  - "**/test_fixtures/**"
+  - "**/testdata/**"
