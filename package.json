@@ -39,7 +39,7 @@
 		"typescript",
 		"static-analysis"
 	],
-	"author": "Stripe",
+	"author": "Tempo Labs",
 	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/stripe/tempo-lints/issues"
