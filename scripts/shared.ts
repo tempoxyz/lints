@@ -192,7 +192,7 @@ export function getValidRuleIds(
 				const filePath = path.join(dir, file)
 				const content = fs.readFileSync(filePath, 'utf8')
 				const match = content.match(/^id:\s*(.+)$/m)
-				if (match) {
+				if (match?.[1]) {
 					ids.add(match[1].trim())
 				}
 			}
