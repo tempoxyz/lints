@@ -1,6 +1,6 @@
 name: "Tempo Lints"
-description: "Run Tempo ast-grep lint rules on your codebase"
-author: "Stripe"
+description: "Run Tempo lint rules on your codebase"
+author: "Tempo Labs"
 
 branding:
   icon: "check-circle"
@@ -76,27 +76,28 @@ runs:
           OUTPUT_FORMAT="--github-action"
         fi
 
-        CLI_ARGS="${{ inputs.language }} $SCAN_PATH $OUTPUT_FORMAT"
+        # Build CLI args array for safe parameter passing
+        CLI_ARGS=("${{ inputs.language }}" "$SCAN_PATH" "$OUTPUT_FORMAT")
 
         if [ -n "${{ inputs.exclude-rules }}" ]; then
-          CLI_ARGS="$CLI_ARGS --exclude ${{ inputs.exclude-rules }}"
+          CLI_ARGS+=("--exclude" "${{ inputs.exclude-rules }}")
         fi
 
         if [ "${{ inputs.fix }}" = "true" ]; then
-          CLI_ARGS="$CLI_ARGS --fix"
+          CLI_ARGS+=("--fix")
         fi
 
         # Debug: show what we're scanning
         echo "Scanning: $SCAN_PATH"
-        echo "CLI args: $CLI_ARGS"
+        echo "CLI args: ${CLI_ARGS[*]}"
 
         # Run lint and capture output
         OUTPUT_FILE="${{ runner.temp }}/tempo-lints-output.json"
         set +e
         if [ "$OUTPUT_FORMAT" = "--json" ]; then
-          pnpm --dir "${{ github.action_path }}" exec tsx "${{ github.action_path }}/bin/tempo-lints.ts" $CLI_ARGS > "$OUTPUT_FILE" 2>/dev/null
+          pnpm --dir "${{ github.action_path }}" exec tsx "${{ github.action_path }}/bin/tempo-lints.ts" "${CLI_ARGS[@]}" > "$OUTPUT_FILE" 2>/dev/null
         else
-          pnpm --dir "${{ github.action_path }}" exec tsx "${{ github.action_path }}/bin/tempo-lints.ts" $CLI_ARGS
+          pnpm --dir "${{ github.action_path }}" exec tsx "${{ github.action_path }}/bin/tempo-lints.ts" "${CLI_ARGS[@]}"
         fi
         EXIT_CODE=$?
         set -e
@@ -109,7 +110,11 @@ runs:
 
         echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
         echo "has_errors=$HAS_ERRORS" >> $GITHUB_OUTPUT
-        echo "output_file=$OUTPUT_FILE" >> $GITHUB_OUTPUT
+
+        # Only set output_file when using JSON format
+        if [ "$OUTPUT_FORMAT" = "--json" ]; then
+          echo "output_file=$OUTPUT_FILE" >> $GITHUB_OUTPUT
+        fi
 
     - name: Post PR comment
       if: inputs.post-comment == 'true' && github.event_name == 'pull_request'
@@ -123,6 +128,12 @@ runs:
         fi
 
         OUTPUT_FILE="${{ steps.run-lint.outputs.output_file }}"
+
+        # Validate output file exists
+        if [ ! -f "$OUTPUT_FILE" ]; then
+          echo "::error::Output file not found at $OUTPUT_FILE"
+          exit 1
+        fi
 
         # Count issues from JSON output
         TOTAL_ISSUES=$(node -p "try { JSON.parse(require('fs').readFileSync('$OUTPUT_FILE','utf8')).length } catch { 0 }" 2>/dev/null || echo "0")
