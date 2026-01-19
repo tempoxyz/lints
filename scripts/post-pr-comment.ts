@@ -85,23 +85,23 @@ function generateComment(issues: LintIssue[]): string {
 
 	if (totalIssues === 0) {
 		return `${signature}
-## ✅ Tempo Lint Results
+## [PASS] Tempo Lint Results
 
-No lint issues found! Great job! 🎉`
+No lint issues found! Great job!`
 	}
 
 	const counts = countBySeverity(issues)
 
 	let body = `${signature}
-## 🔍 Tempo Lint Results
+## Tempo Lint Results
 
 Found **${totalIssues}** issue(s) in this PR.
 
 | Severity | Count |
 |----------|-------|
-| ❌ Errors | ${counts.error} |
-| ⚠️ Warnings | ${counts.warning} |
-| 💡 Hints | ${counts.hint} |
+| Errors | ${counts.error} |
+| Warnings | ${counts.warning} |
+| Hints | ${counts.hint} |
 
 <details>
 <summary>View Issues</summary>
