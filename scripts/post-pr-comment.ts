@@ -4,13 +4,16 @@ import fs from 'node:fs'
 import {
 	COMMENT_SIGNATURE,
 	countBySeverity,
+	getValidRuleIds,
+	isValidLanguage,
+	type Language,
 	type LintIssue,
 	MAX_ISSUES_IN_COMMENT,
 	parseLintIssues,
 	warn,
 } from './shared.ts'
 
-const [, , outputFile, totalIssuesStr, repo, prNumber] = process.argv
+const [, , outputFile, totalIssuesStr, repo, prNumber, languageArg] = process.argv
 const totalIssues = Number.parseInt(totalIssuesStr ?? '0', 10) || 0
 const githubToken = process.env.GITHUB_TOKEN
 
@@ -21,9 +24,19 @@ if (!githubToken) {
 
 if (!repo || !prNumber) {
 	warn('Repository and PR number are required')
-	console.error('Usage: tsx post-pr-comment.ts <output_file> <total_issues> <repo> <pr_number>')
+	console.error(
+		'Usage: tsx post-pr-comment.ts <output_file> <total_issues> <repo> <pr_number> <language>',
+	)
 	process.exit(1)
 }
+
+if (!languageArg || !isValidLanguage(languageArg)) {
+	warn(`Invalid language: ${languageArg}. Must be one of: rust, typescript, all`)
+	process.exit(1)
+}
+
+// Type assertion safe after validation
+const language: Language = languageArg as Language
 
 interface GitHubComment {
 	id?: number
@@ -150,7 +163,9 @@ async function main(): Promise<void> {
 	if (outputFile && fs.existsSync(outputFile)) {
 		try {
 			const content = fs.readFileSync(outputFile, 'utf8')
-			const result = parseLintIssues(content)
+			// Get valid rule IDs to filter out non-tempo lint entries
+			const validRuleIds = getValidRuleIds(language)
+			const result = parseLintIssues(content, validRuleIds)
 			if (result.error) {
 				warn(`Lint output: ${result.error}`)
 			}

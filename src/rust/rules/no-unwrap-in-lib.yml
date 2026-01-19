@@ -4,15 +4,18 @@ severity: warning
 language: rust
 note: |
   `.unwrap()` panics on None/Err without context, making debugging harder.
-  
+
   Prefer:
   - `?` operator to propagate errors
   - `.expect("meaningful message")` if panic is intentional
   - `.unwrap_or()` / `.unwrap_or_default()` for fallbacks
   - `if let Some(x) = ...` for explicit handling
-  
-  This rule is ignored in test files.
-  
+
+  This rule only applies to library code (lib/**). It's ignored in:
+  - CLI/binary code (cli/**, bin/**, main.rs)
+  - Test code (tests/**, *_test.rs, test_*.rs)
+  - Benchmarks and examples
+
   To disable this rule:
   - Line: add `// ast-grep-ignore: no-unwrap-in-lib` on the line before
 rule:
@@ -25,3 +28,6 @@ ignores:
   - "**/*_test.rs"
   - "**/benches/**"
   - "**/examples/**"
+  - "**/main.rs"
+  - "**/bin/**"
+  - "**/cli/**"

@@ -160,7 +160,8 @@ runs:
           "$OUTPUT_FILE" \
           "$TOTAL_ISSUES" \
           "${{ github.repository }}" \
-          "${{ github.event.pull_request.number }}"
+          "${{ github.event.pull_request.number }}" \
+          "${{ inputs.language }}"
 
     - name: Check for failures
       if: inputs.fail-on-error == 'true'
