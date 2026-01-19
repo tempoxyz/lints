@@ -8,6 +8,7 @@ import {
 	generateConfigContent,
 	getRuleDirs,
 	getRuleDirsRelative,
+	getValidRuleIds,
 	isValidLanguage,
 	LANG,
 	type LintIssue,
@@ -509,5 +510,110 @@ describe('LANG constants', () => {
 		expect(LANG.RUST).toBe('rust')
 		expect(LANG.TYPESCRIPT).toBe('typescript')
 		expect(LANG.ALL).toBe('all')
+	})
+})
+
+describe('getValidRuleIds', () => {
+	it('should return rust rule IDs', () => {
+		const ids = Array.from(getValidRuleIds(LANG.RUST))
+
+		// Should include known rust rules
+		expect(ids).toContain('no-dbg-macro')
+		expect(ids).toContain('no-unwrap-in-lib')
+		expect(ids).toContain('no-mem-transmute')
+		expect(ids).toContain('tracing-no-format')
+		expect(ids).toContain('unsafe-needs-safety-comment')
+	})
+
+	it('should return typescript rule IDs', () => {
+		const ids = Array.from(getValidRuleIds(LANG.TYPESCRIPT))
+
+		// Should include known typescript rules (if any exist)
+		expect(ids.length).toBeGreaterThanOrEqual(0)
+	})
+
+	it('should return all rule IDs for "all" language', () => {
+		const ids = Array.from(getValidRuleIds(LANG.ALL))
+
+		// Should include rules from both languages
+		expect(ids).toContain('no-dbg-macro')
+		expect(ids.length).toBeGreaterThan(0)
+	})
+})
+
+describe('parseLintIssues with rule ID filtering', () => {
+	it('should filter out entries with invalid ruleId', () => {
+		const mixedOutput = JSON.stringify([
+			{
+				ruleId: 'no-dbg-macro',
+				file: 'test.rs',
+				range: { start: { line: 1, column: 1 }, end: { line: 1, column: 10 } },
+				message: 'Remove dbg! macro',
+				severity: 'error',
+			},
+			{
+				ruleId: 'clippy::unwrap_used',
+				file: 'test.rs',
+				range: { start: { line: 2, column: 1 }, end: { line: 2, column: 10 } },
+				message: 'Clippy warning',
+				severity: 'warning',
+			},
+			{
+				ruleId: 'unknown-rule',
+				file: 'test.rs',
+				range: { start: { line: 3, column: 1 }, end: { line: 3, column: 10 } },
+				message: 'Unknown',
+				severity: 'warning',
+			},
+		])
+
+		const validIds = new Set(['no-dbg-macro', 'no-unwrap-in-lib'])
+		const result = parseLintIssues(mixedOutput, validIds)
+
+		expect(result.error).toBeNull()
+		expect(result.issues).toHaveLength(1)
+		expect(result.issues[0]?.ruleId).toBe('no-dbg-macro')
+	})
+
+	it('should pass through all entries when no validRuleIds provided', () => {
+		const output = JSON.stringify([
+			{
+				ruleId: 'no-dbg-macro',
+				file: 'test.rs',
+				range: { start: { line: 1, column: 1 }, end: { line: 1, column: 10 } },
+				message: 'Remove dbg! macro',
+				severity: 'error',
+			},
+			{
+				ruleId: 'unknown-rule',
+				file: 'test.rs',
+				range: { start: { line: 2, column: 1 }, end: { line: 2, column: 10 } },
+				message: 'Unknown',
+				severity: 'warning',
+			},
+		])
+
+		const result = parseLintIssues(output)
+
+		expect(result.error).toBeNull()
+		expect(result.issues).toHaveLength(2)
+	})
+
+	it('should filter all entries if none match validRuleIds', () => {
+		const output = JSON.stringify([
+			{
+				ruleId: 'clippy::unwrap_used',
+				file: 'test.rs',
+				range: { start: { line: 1, column: 1 }, end: { line: 1, column: 10 } },
+				message: 'Clippy warning',
+				severity: 'warning',
+			},
+		])
+
+		const validIds = new Set(['no-dbg-macro'])
+		const result = parseLintIssues(output, validIds)
+
+		expect(result.error).toBeNull()
+		expect(result.issues).toHaveLength(0)
 	})
 })

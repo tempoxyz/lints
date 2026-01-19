@@ -75,8 +75,9 @@ function isAstGrepIssueArray(value: unknown): value is AstGrepIssue[] {
 	for (let i = 0; i < samplesToCheck; i++) {
 		const item = value[i]
 		if (typeof item !== 'object' || item === null) return false
-		// ast-grep always includes file and range
-		if (!('file' in item || 'ruleId' in item)) {
+		// Require ruleId field to ensure we only accept lint rule violations
+		// This filters out parse errors and other non-lint entries
+		if (!('ruleId' in item)) {
 			return false
 		}
 	}
@@ -96,7 +97,10 @@ function normalizeIssue(issue: AstGrepIssue): LintIssue {
 	}
 }
 
-export function parseLintIssues(input: string): { issues: LintIssue[]; error: string | null } {
+export function parseLintIssues(
+	input: string,
+	validRuleIds?: Set<string>,
+): { issues: LintIssue[]; error: string | null } {
 	const { data, error } = safeParseJSON<unknown>(input)
 
 	if (error) {
@@ -108,7 +112,24 @@ export function parseLintIssues(input: string): { issues: LintIssue[]; error: st
 	}
 
 	// Normalize ast-grep issues to our format
-	const issues = data.map(normalizeIssue)
+	let issues = data.map(normalizeIssue)
+
+	// Filter by valid rule IDs if provided (to exclude non-tempo lint entries)
+	if (validRuleIds) {
+		const filteredOut: LintIssue[] = []
+		issues = issues.filter((issue) => {
+			if (validRuleIds.has(issue.ruleId)) {
+				return true
+			}
+			filteredOut.push(issue)
+			return false
+		})
+
+		// Warn about filtered issues
+		for (const issue of filteredOut) {
+			warn(`Filtered out non-tempo lint issue: ${issue.ruleId} in ${issue.file}:${issue.line}`)
+		}
+	}
 
 	return { issues, error: null }
 }
@@ -147,6 +168,38 @@ export function getRuleDirsRelative(language: Language): string[] {
 	}
 
 	return dirs
+}
+
+/**
+ * Get all valid rule IDs for a given language by scanning rule directories.
+ * This is used to filter out non-lint entries from the output.
+ */
+export function getValidRuleIds(
+	language: Language,
+	packageRoot: string = PACKAGE_ROOT,
+): Set<string> {
+	const ruleDirs = getRuleDirs(language, packageRoot)
+	const ids = new Set<string>()
+
+	for (const dir of ruleDirs) {
+		if (!fs.existsSync(dir)) {
+			continue
+		}
+
+		const files = fs.readdirSync(dir)
+		for (const file of files) {
+			if (file.endsWith('.yml')) {
+				const filePath = path.join(dir, file)
+				const content = fs.readFileSync(filePath, 'utf8')
+				const match = content.match(/^id:\s*(.+)$/m)
+				if (match) {
+					ids.add(match[1].trim())
+				}
+			}
+		}
+	}
+
+	return ids
 }
 
 export function generateConfigContent(ruleDirs: string[]): string {
