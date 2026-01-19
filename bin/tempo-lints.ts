@@ -11,6 +11,7 @@ import {
 	generateConfigContent,
 	getRuleDirs,
 	getRuleDirsRelative,
+	getValidRuleIds,
 	isValidLanguage,
 	LANG,
 	type Language,
@@ -47,7 +48,7 @@ function runScan(language: string, scanPath: string, options: ScanOptions): void
 
 	const excludeRules = options.exclude?.split(',').map((r) => r.trim()) ?? []
 
-	runAstGrep(configPath, scanPath, {
+	runAstGrep(language, configPath, scanPath, {
 		json: options.json ?? false,
 		fix: options.fix ?? false,
 		githubAction: options.githubAction ?? false,
@@ -64,7 +65,12 @@ interface AstGrepOptions {
 	cleanup: () => void
 }
 
-function runAstGrep(configPath: string, scanPath: string, options: AstGrepOptions): void {
+function runAstGrep(
+	language: Language,
+	configPath: string,
+	scanPath: string,
+	options: AstGrepOptions,
+): void {
 	const { cleanup } = options
 
 	const handleSignal = (signal: 'SIGINT' | 'SIGTERM') => {
@@ -108,7 +114,9 @@ function runAstGrep(configPath: string, scanPath: string, options: AstGrepOption
 		cleanup()
 
 		if (useJson && output) {
-			const { issues, error } = parseLintIssues(output)
+			// Get valid rule IDs to filter out non-tempo lint entries
+			const validRuleIds = getValidRuleIds(language)
+			const { issues, error } = parseLintIssues(output, validRuleIds)
 
 			if (error) {
 				warn(error)
