@@ -43,16 +43,16 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Enable Corepack
+      shell: bash
+      run: corepack enable
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: "20"
         cache: "pnpm"
         cache-dependency-path: ${{ github.action_path }}/pnpm-lock.yaml
-
-    - name: Enable Corepack
-      shell: bash
-      run: corepack enable
 
     - name: Install tempo-lints dependencies
       shell: bash
