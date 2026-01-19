@@ -148,18 +148,14 @@ function outputForGitHubAction(issues: LintIssue[]): void {
 	const total = issues.length
 	const hasErrors = counts.error > 0
 
+	// Output GitHub Actions annotations (these show up in the PR "Files changed" view)
 	for (const issue of issues) {
-		const file = issue.file ?? 'unknown'
-		const line = issue.range?.start?.line ?? 1
-		const col = issue.range?.start?.column ?? 1
-		const severity = issue.severity ?? 'warning'
-		const ruleId = issue.ruleId ?? 'unknown'
-		const message = issue.message ?? 'Lint issue'
-
-		const annotationType = severity === 'error' ? 'error' : 'warning'
-		console.log(`::${annotationType} file=${file},line=${line},col=${col}::${ruleId}: ${message}`)
+		const annotationType = issue.severity === 'error' ? 'error' : 'warning'
+		// Format: ::warning file={name},line={line},col={col}::{message}
+		console.log(`::${annotationType} file=${issue.file},line=${issue.line},col=${issue.column}::${issue.ruleId}: ${issue.message}`)
 	}
 
+	// Output summary
 	console.log('')
 	console.log('========================================')
 	console.log('Tempo Lint Results')
@@ -173,16 +169,14 @@ function outputForGitHubAction(issues: LintIssue[]): void {
 	if (total === 0) {
 		console.log('No lint issues found!')
 	} else {
+		// Detailed output with file:line
 		for (const issue of issues) {
-			const file = issue.file ?? 'unknown'
-			const line = issue.range?.start?.line ?? '?'
-			const severity = issue.severity ?? 'warning'
-			const ruleId = issue.ruleId ?? 'unknown'
-			const message = issue.message ?? 'Lint issue'
-
-			const prefix = severity === 'error' ? '[ERROR]' : severity === 'warning' ? '[WARN]' : '[HINT]'
-			console.log(`${prefix} ${file}:${line}`)
-			console.log(`[${ruleId}] ${message}`)
+			const prefix = issue.severity === 'error' ? '[ERROR]' : issue.severity === 'warning' ? '[WARN]' : '[HINT]'
+			console.log(`${prefix} ${issue.file}:${issue.line}:${issue.column}`)
+			console.log(`  ${issue.ruleId}: ${issue.message}`)
+			if (issue.code) {
+				console.log(`  > ${issue.code}`)
+			}
 			console.log('')
 		}
 	}

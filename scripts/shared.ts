@@ -31,36 +31,69 @@ export interface SeverityCounts {
 	hint: number
 }
 
-export interface LintIssue {
-	ruleId?: string
-	severity?: string
-	message?: string
-	file?: string
+// ast-grep's actual JSON output format
+export interface AstGrepIssue {
+	text?: string
 	range?: {
 		start?: {
 			line?: number
 			column?: number
 		}
+		end?: {
+			line?: number
+			column?: number
+		}
 	}
+	file?: string
+	lines?: string
+	language?: string
+	ruleId?: string
+	severity?: string
+	message?: string // From rule definition
+	note?: string // From rule definition
+}
+
+// Normalized issue format for output
+export interface LintIssue {
+	ruleId: string
+	severity: string
+	message: string
+	file: string
+	line: number
+	column: number
+	code?: string
 }
 
 export function isValidLanguage(value: unknown): value is Language {
 	return typeof value === 'string' && VALID_LANGUAGES.includes(value as Language)
 }
 
-function isLintIssueArray(value: unknown): value is LintIssue[] {
+function isAstGrepIssueArray(value: unknown): value is AstGrepIssue[] {
 	if (!Array.isArray(value)) return false
 
 	const samplesToCheck = Math.min(value.length, 5)
 	for (let i = 0; i < samplesToCheck; i++) {
 		const item = value[i]
 		if (typeof item !== 'object' || item === null) return false
-		if (!('ruleId' in item || 'severity' in item || 'message' in item || 'file' in item)) {
+		// ast-grep always includes file and range
+		if (!('file' in item || 'ruleId' in item)) {
 			return false
 		}
 	}
 
 	return true
+}
+
+function normalizeIssue(issue: AstGrepIssue): LintIssue {
+	return {
+		ruleId: issue.ruleId ?? 'unknown',
+		severity: issue.severity ?? 'warning',
+		message: issue.message ?? issue.note?.split('\n')[0] ?? 'Lint issue',
+		file: issue.file ?? 'unknown',
+		line: issue.range?.start?.line ?? 1,
+		column: issue.range?.start?.column ?? 1,
+		code: issue.lines?.trim(),
+	}
 }
 
 export function parseLintIssues(input: string): { issues: LintIssue[]; error: string | null } {
@@ -70,11 +103,14 @@ export function parseLintIssues(input: string): { issues: LintIssue[]; error: st
 		return { issues: [], error: `Failed to parse JSON: ${error.message}` }
 	}
 
-	if (!isLintIssueArray(data)) {
+	if (!isAstGrepIssueArray(data)) {
 		return { issues: [], error: 'Expected JSON array of lint results' }
 	}
 
-	return { issues: data, error: null }
+	// Normalize ast-grep issues to our format
+	const issues = data.map(normalizeIssue)
+
+	return { issues, error: null }
 }
 
 export function getRuleDirs(language: Language, packageRoot: string = PACKAGE_ROOT): string[] {
@@ -151,7 +187,7 @@ export function filterExcludedRules(
 
 	const foundRules = new Set<string>()
 	for (const item of issues) {
-		if (item.ruleId) foundRules.add(item.ruleId)
+		foundRules.add(item.ruleId)
 	}
 
 	for (const excludedRule of excludeSet) {
@@ -160,7 +196,7 @@ export function filterExcludedRules(
 		}
 	}
 
-	const filtered = issues.filter((item) => !excludeSet.has(item.ruleId ?? ''))
+	const filtered = issues.filter((item) => !excludeSet.has(item.ruleId))
 
 	return { filtered, warnings }
 }
@@ -169,9 +205,8 @@ export function countBySeverity(issues: LintIssue[]): SeverityCounts {
 	const counts: SeverityCounts = { error: 0, warning: 0, hint: 0 }
 
 	for (const item of issues) {
-		const sev = item.severity || SEVERITY.HINT
-		if (sev === SEVERITY.ERROR) counts.error++
-		else if (sev === SEVERITY.WARNING) counts.warning++
+		if (item.severity === SEVERITY.ERROR) counts.error++
+		else if (item.severity === SEVERITY.WARNING) counts.warning++
 		else counts.hint++
 	}
 
