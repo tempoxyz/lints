@@ -58,15 +58,23 @@ runs:
       shell: bash
       run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
 
-    - name: Cache pnpm dependencies
+    - name: Cache pnpm store
       uses: actions/cache@v4
       with:
         path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-        key: tempo-lints-pnpm-${{ runner.os }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', github.action_path)) }}
+        key: tempo-lints-pnpm-store-${{ runner.os }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', github.action_path)) }}
         restore-keys: |
-          tempo-lints-pnpm-${{ runner.os }}-
+          tempo-lints-pnpm-store-${{ runner.os }}-
+
+    - name: Cache node_modules (includes sg binary)
+      id: cache-node-modules
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.action_path }}/node_modules
+        key: tempo-lints-node-modules-${{ runner.os }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', github.action_path)) }}
 
     - name: Install tempo-lints dependencies
+      if: steps.cache-node-modules.outputs.cache-hit != 'true'
       shell: bash
       run: cd "${{ github.action_path }}" && pnpm install --frozen-lockfile
 

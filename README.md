@@ -4,6 +4,35 @@ Shared [ast-grep](https://ast-grep.github.io/) lint rules for Tempo projects.
 
 :warning: This project is under active development :warning:
 
+## Prerequisites
+
+This package requires [ast-grep](https://ast-grep.github.io/) (`sg` CLI) to run lints.
+
+### Installing ast-grep
+
+**macOS (Homebrew):**
+```bash
+brew install ast-grep
+```
+
+**Cargo (Rust):**
+```bash
+cargo install ast-grep --locked
+```
+
+**npm (global):**
+```bash
+npm install -g @ast-grep/cli
+```
+
+**Verify installation:**
+```bash
+sg --version
+# Should output: ast-grep 0.25.x or higher
+```
+
+> **Note:** When using this package via npm/pnpm, the `@ast-grep/cli` dependency is included and installs the `sg` binary automatically via postinstall.
+
 ## Installation
 
 ### GitHub Action (Recommended for CI)
