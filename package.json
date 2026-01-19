@@ -21,7 +21,7 @@
 		"test:shared-rules": "vitest run",
 		"test:update-snapshots": "sg test --config src/shared/sgconfig.yml --update-all && sg test --config src/rust/sgconfig.yml --update-all && sg test --config src/typescript/sgconfig.yml --update-all",
 		"test:update-shared-snapshots": "sg test --config src/shared/sgconfig.yml --update-all",
-		"check": "biome check --write --unsafe",
+		"check": "npm run typecheck && biome check --write --unsafe",
 		"check:biome": "biome check --write --unsafe",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check",

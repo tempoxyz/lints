@@ -122,6 +122,7 @@ Found **${totalIssuesCount}** issue(s) across **${Object.keys(fileGroups).length
 		const displayCount = Math.min(ruleIssues.length, MAX_ISSUES_PER_RULE)
 		for (let i = 0; i < displayCount; i++) {
 			const issue = ruleIssues[i]
+			if (!issue) continue
 			body += `- \`${issue.file}:${issue.line}\` - ${issue.message}\n`
 		}
 
@@ -145,6 +146,7 @@ Found **${totalIssuesCount}** issue(s) across **${Object.keys(fileGroups).length
 		const displayCount = Math.min(fileIssues.length, MAX_ISSUES_PER_FILE)
 		for (let i = 0; i < displayCount; i++) {
 			const issue = fileIssues[i]
+			if (!issue) continue
 			body += `- Line ${issue.line}: [${issue.severity}] ${issue.ruleId}\n`
 		}
 
@@ -262,10 +264,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 		process.exit(1)
 	}
 
-	// Type assertion safe after validation
+	// Type assertions safe after validation
 	const language: Language = languageArg as Language
 
-	main(outputFile, totalIssues, repo, prNumber, language, githubToken).catch((err: Error) => {
+	main(outputFile ?? '', totalIssues, repo, prNumber, language, githubToken).catch((err: Error) => {
 		warn(err.message)
 		process.exit(1)
 	})
