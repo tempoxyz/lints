@@ -53,16 +53,20 @@ runs:
       with:
         node-version: "20"
 
-    - name: Get pnpm store directory
-      id: pnpm-cache
+    - name: Get cache keys
+      id: cache-keys
       shell: bash
-      run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+      run: |
+        echo "PNPM_STORE=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+        # Hash the lockfile for cache key
+        LOCK_HASH=$(sha256sum "${{ github.action_path }}/pnpm-lock.yaml" | cut -d' ' -f1 | head -c 16)
+        echo "LOCK_HASH=$LOCK_HASH" >> $GITHUB_OUTPUT
 
     - name: Cache pnpm store
       uses: actions/cache@v4
       with:
-        path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-        key: tempo-lints-pnpm-store-${{ runner.os }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', github.action_path)) }}
+        path: ${{ steps.cache-keys.outputs.PNPM_STORE }}
+        key: tempo-lints-pnpm-store-${{ runner.os }}-${{ steps.cache-keys.outputs.LOCK_HASH }}
         restore-keys: |
           tempo-lints-pnpm-store-${{ runner.os }}-
 
@@ -71,7 +75,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ github.action_path }}/node_modules
-        key: tempo-lints-node-modules-${{ runner.os }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', github.action_path)) }}
+        key: tempo-lints-node-modules-${{ runner.os }}-${{ steps.cache-keys.outputs.LOCK_HASH }}
 
     - name: Install tempo-lints dependencies
       if: steps.cache-node-modules.outputs.cache-hit != 'true'
@@ -81,9 +85,16 @@ runs:
     - name: Run Tempo Lints
       id: run-lint
       shell: bash
+      working-directory: ${{ github.workspace }}
       run: |
+        # Resolve scan path (default to workspace root)
+        SCAN_PATH="${{ inputs.path }}"
+        if [ "$SCAN_PATH" = "." ]; then
+          SCAN_PATH="${{ github.workspace }}"
+        fi
+
         # Build CLI args
-        CLI_ARGS="${{ inputs.language }} ${{ inputs.path }} --github-action"
+        CLI_ARGS="${{ inputs.language }} $SCAN_PATH --github-action"
 
         if [ -n "${{ inputs.exclude-rules }}" ]; then
           CLI_ARGS="$CLI_ARGS --exclude ${{ inputs.exclude-rules }}"
@@ -92,6 +103,10 @@ runs:
         if [ "${{ inputs.fix }}" = "true" ]; then
           CLI_ARGS="$CLI_ARGS --fix"
         fi
+
+        # Debug: show what we're scanning
+        echo "Scanning: $SCAN_PATH"
+        echo "CLI args: $CLI_ARGS"
 
         # Run lint with --github-action flag (outputs annotations and summary)
         set +e
@@ -111,6 +126,7 @@ runs:
     - name: Post PR comment
       if: inputs.post-comment == 'true' && github.event_name == 'pull_request'
       shell: bash
+      working-directory: ${{ github.workspace }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
@@ -119,8 +135,14 @@ runs:
           exit 0
         fi
 
+        # Resolve scan path (default to workspace root)
+        SCAN_PATH="${{ inputs.path }}"
+        if [ "$SCAN_PATH" = "." ]; then
+          SCAN_PATH="${{ github.workspace }}"
+        fi
+
         # Build CLI args for JSON output
-        CLI_ARGS="${{ inputs.language }} ${{ inputs.path }} --json"
+        CLI_ARGS="${{ inputs.language }} $SCAN_PATH --json"
 
         if [ -n "${{ inputs.exclude-rules }}" ]; then
           CLI_ARGS="$CLI_ARGS --exclude ${{ inputs.exclude-rules }}"
