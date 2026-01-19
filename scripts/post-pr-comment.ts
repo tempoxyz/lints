@@ -123,7 +123,7 @@ Found **${totalIssues}** issue(s) in this PR.
 </details>
 
 ---
-*Posted by [Tempo Lints](https://github.com/stripe/tempo-lints)*`
+*Posted by https://github.com/tempoxyz/lints*`
 
 	return body
 }

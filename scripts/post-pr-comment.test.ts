@@ -54,7 +54,7 @@ Found **${totalIssues}** issue(s) in this PR.
 </details>
 
 ---
-*Posted by [Tempo Lints](https://github.com/stripe/tempo-lints)*`
+*Posted by https://github.com/tempoxyz/lints*`
 
 	return body
 }
@@ -155,7 +155,7 @@ describe('generateComment', () => {
 
 		const comment = generateComment(issues, 1)
 
-		expect(comment).toContain('Posted by [Tempo Lints](https://github.com/stripe/tempo-lints)')
+		expect(comment).toContain('Posted by https://github.com/tempoxyz/lints')
 	})
 
 	it('should correctly count mixed severity issues', () => {
