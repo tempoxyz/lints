@@ -1,0 +1,23 @@
+id: no-non-null-assertion
+snapshots:
+  ? |
+    const result = getValue()!;
+  : labels:
+    - source: getValue()!
+      style: primary
+      start: 15
+      end: 26
+  ? |
+    const value = obj!.prop;
+  : labels:
+    - source: obj!
+      style: primary
+      start: 14
+      end: 18
+  ? |
+    process(data!);
+  : labels:
+    - source: data!
+      style: primary
+      start: 8
+      end: 13

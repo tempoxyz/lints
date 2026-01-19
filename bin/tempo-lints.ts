@@ -88,8 +88,8 @@ function runAstGrep(configPath: string, scanPath: string, options: AstGrepOption
 
 	args.push(scanPath)
 
-	const localAstGrep = path.join(PACKAGE_ROOT, 'node_modules', '.bin', 'ast-grep')
-	const astGrepPath = fs.existsSync(localAstGrep) ? localAstGrep : 'ast-grep'
+	const localAstGrep = path.join(PACKAGE_ROOT, 'node_modules', '.bin', 'sg')
+	const astGrepPath = fs.existsSync(localAstGrep) ? localAstGrep : 'sg'
 
 	const proc = spawn(astGrepPath, args, {
 		stdio: useJson ? ['inherit', 'pipe', 'inherit'] : 'inherit',

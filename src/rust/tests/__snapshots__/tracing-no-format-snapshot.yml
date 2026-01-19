@@ -1,0 +1,30 @@
+id: tracing-no-format
+snapshots:
+  ? |
+    info!("Value: {}", format!("{:?}", x));
+  : labels:
+    - source: 'info!("Value: {}", format!("{:?}", x))'
+      style: primary
+      start: 0
+      end: 38
+  ? |
+    tracing::debug!("Debug: {}", format!("{}", value));
+  : labels:
+    - source: 'tracing::debug!("Debug: {}", format!("{}", value))'
+      style: primary
+      start: 0
+      end: 50
+  ? |
+    tracing::info!("User {}", format!("{:?}", user));
+  : labels:
+    - source: tracing::info!("User {}", format!("{:?}", user))
+      style: primary
+      start: 0
+      end: 48
+  ? |
+    warn!("Warning: {}", format!("{}", msg));
+  : labels:
+    - source: 'warn!("Warning: {}", format!("{}", msg))'
+      style: primary
+      start: 0
+      end: 40

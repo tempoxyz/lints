@@ -14,13 +14,13 @@
 		"action.yml"
 	],
 	"scripts": {
-		"test": "npm run test:rust && npm run test:typescript && npm run test:shared && npm run test:shared-rules",
-		"test:rust": "cd src/rust && ast-grep test --config sgconfig.yml",
-		"test:typescript": "cd src/typescript && ast-grep test --config sgconfig.yml",
-		"test:shared": "cd src/shared && ast-grep test --config sgconfig.yml",
+		"test": "npm run test:rust && npm run test:typescript && npm run test:shared-rules",
+		"test:rust": "sg test --config src/rust/sgconfig.yml",
+		"test:typescript": "sg test --config src/typescript/sgconfig.yml",
+		"test:shared": "sg test --config src/shared/sgconfig.yml",
 		"test:shared-rules": "vitest run",
-		"test:update-snapshots": "cd src/shared && ast-grep test --config sgconfig.yml --update-all && cd ../rust && ast-grep test --config sgconfig.yml --update-all && cd ../typescript && ast-grep test --config sgconfig.yml --update-all",
-		"test:update-shared-snapshots": "cd src/shared && ast-grep test --config sgconfig.yml --update-all",
+		"test:update-snapshots": "sg test --config src/shared/sgconfig.yml --update-all && sg test --config src/rust/sgconfig.yml --update-all && sg test --config src/typescript/sgconfig.yml --update-all",
+		"test:update-shared-snapshots": "sg test --config src/shared/sgconfig.yml --update-all",
 		"check": "biome check --write --unsafe",
 		"check:biome": "biome check --write --unsafe",
 		"typecheck": "tsc --noEmit",
@@ -54,7 +54,6 @@
 	},
 	"dependencies": {
 		"@ast-grep/cli": "~0.25.0",
-		"ast-grep": "^0.1.0",
 		"commander": "^12.1.0"
 	},
 	"engines": {

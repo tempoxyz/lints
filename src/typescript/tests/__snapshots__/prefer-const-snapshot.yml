@@ -1,0 +1,23 @@
+id: prefer-const
+snapshots:
+  ? |
+    let config = { debug: true };
+  : labels:
+    - source: 'let config = { debug: true };'
+      style: primary
+      start: 0
+      end: 29
+  ? |
+    let name = "Alice";
+  : labels:
+    - source: let name = "Alice";
+      style: primary
+      start: 0
+      end: 19
+  ? |
+    let x = 1;
+  : labels:
+    - source: let x = 1;
+      style: primary
+      start: 0
+      end: 10
