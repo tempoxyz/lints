@@ -106,10 +106,12 @@ describe('parseLintIssues', () => {
 
 		expect(result.error).toBeNull()
 		expect(result.issues).toHaveLength(2)
-		expect(result.issues[0].ruleId).toBe('no-dbg-macro')
-		expect(result.issues[0].severity).toBe('error')
-		expect(result.issues[1].ruleId).toBe('no-unwrap-in-lib')
-		expect(result.issues[1].severity).toBe('warning')
+		const issue0 = result.issues[0]!
+		const issue1 = result.issues[1]!
+		expect(issue0.ruleId).toBe('no-dbg-macro')
+		expect(issue0.severity).toBe('error')
+		expect(issue1.ruleId).toBe('no-unwrap-in-lib')
+		expect(issue1.severity).toBe('warning')
 	})
 
 	it('should parse empty array', () => {
@@ -142,7 +144,7 @@ describe('parseLintIssues', () => {
 		expect(result.error).toBeNull()
 		expect(result.issues).toHaveLength(1)
 		// Should use first line of note when message is missing
-		expect(result.issues[0].message).toBe('Consider using None here')
+		expect(result.issues[0]!.message).toBe('Consider using None here')
 	})
 
 	it('should handle issues with missing optional fields', () => {
@@ -228,7 +230,7 @@ describe('parseLintIssues', () => {
 
 		expect(result.error).toBeNull()
 		expect(result.issues).toHaveLength(1)
-		expect(result.issues[0].ruleId).toBe('option-rule')
+		expect(result.issues[0]!.ruleId).toBe('option-rule')
 	})
 })
 
@@ -407,7 +409,7 @@ describe('filterExcludedRules', () => {
 		const result = filterExcludedRules(sampleIssues, ['no-console-log', 'prefer-const'])
 
 		expect(result.filtered).toHaveLength(1)
-		expect(result.filtered[0].ruleId).toBe('no-explicit-any')
+		expect(result.filtered[0]!.ruleId).toBe('no-explicit-any')
 		expect(result.warnings).toHaveLength(0)
 	})
 
