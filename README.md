@@ -185,7 +185,7 @@ npm run typecheck
 npm run check
 
 # Scan a directory manually
-ast-grep scan --config rules/rust/sgconfig.yml /path/to/code
+ast-grep scan --config src/rust/sgconfig.yml /path/to/code
 ```
 
 ## Contributing

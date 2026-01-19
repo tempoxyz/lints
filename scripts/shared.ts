@@ -21,7 +21,9 @@ const SEVERITY = {
 	HINT: 'hint',
 } as const
 
-export const MAX_ISSUES_IN_COMMENT = 25
+export const MAX_ISSUES_PER_RULE = 10
+export const MAX_ISSUES_PER_FILE = 5
+export const MAX_FILES_TO_DISPLAY = 10
 
 export const PACKAGE_ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
 
@@ -264,6 +266,43 @@ export function countBySeverity(issues: LintIssue[]): SeverityCounts {
 	}
 
 	return counts
+}
+
+/**
+ * Generic groupBy function that groups items by a key selector.
+ * @param items Array of items to group
+ * @param keySelector Function that extracts the key from each item
+ * @returns Record with keys and arrays of grouped items
+ */
+export function groupBy<T>(items: T[], keySelector: (item: T) => string): Record<string, T[]> {
+	return items.reduce(
+		(acc, item) => {
+			const key = keySelector(item)
+			if (!acc[key]) acc[key] = []
+			acc[key].push(item)
+			return acc
+		},
+		{} as Record<string, T[]>,
+	)
+}
+
+export function groupByFile(issues: LintIssue[]): Record<string, LintIssue[]> {
+	return groupBy(issues, (issue) => issue.file)
+}
+
+export function groupByRule(issues: LintIssue[]): Record<string, LintIssue[]> {
+	return groupBy(issues, (issue) => issue.ruleId)
+}
+
+/**
+ * Returns a pluralized string based on the count.
+ * @param count The count to check
+ * @param singular The singular form of the word
+ * @param plural The plural form (defaults to singular + 's')
+ * @returns The word with appropriate form
+ */
+export function pluralize(count: number, singular: string, plural?: string): string {
+	return count === 1 ? singular : (plural ?? `${singular}s`)
 }
 
 export function warn(message: string): void {
