@@ -111,8 +111,7 @@ Found **${totalIssues}** issue(s) in this PR.
 
 	const displayIssues = issues.slice(0, MAX_ISSUES_IN_COMMENT)
 	for (const item of displayIssues) {
-		const line = item.range?.start?.line ?? '?'
-		body += `${item.file}:${line} [${item.severity}] ${item.ruleId}: ${item.message}\n`
+		body += `${item.file}:${item.line} [${item.severity}] ${item.ruleId}: ${item.message}\n`
 	}
 
 	if (issues.length > MAX_ISSUES_IN_COMMENT) {
