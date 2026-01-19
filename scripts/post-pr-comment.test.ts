@@ -1,67 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import {
-	COMMENT_SIGNATURE,
-	countBySeverity,
-	type LintIssue,
-	MAX_ISSUES_IN_COMMENT,
-} from './shared.ts'
+import { generateCommentBody } from './post-pr-comment.ts'
+import { COMMENT_SIGNATURE, type LintIssue } from './shared.ts'
 
-/**
- * Test the comment generation logic.
- * Since generateComment in post-pr-comment.ts uses module-scoped variables,
- * we recreate the logic here for testability.
- */
-function generateComment(issues: LintIssue[], totalIssues: number): string {
-	const signature = COMMENT_SIGNATURE
-
-	if (totalIssues === 0) {
-		return `${signature}
-## [PASS] Tempo Lint Results
-
-No lint issues found! Great job!`
-	}
-
-	const counts = countBySeverity(issues)
-
-	let body = `${signature}
-## Tempo Lint Results
-
-Found **${totalIssues}** issue(s) in this PR.
-
-| Severity | Count |
-|----------|-------|
-| Errors | ${counts.error} |
-| Warnings | ${counts.warning} |
-| Hints | ${counts.hint} |
-
-<details>
-<summary>View Issues</summary>
-
-\`\`\`
-`
-
-	const displayIssues = issues.slice(0, MAX_ISSUES_IN_COMMENT)
-	for (const item of displayIssues) {
-		body += `${item.file}:${item.line} [${item.severity}] ${item.ruleId}: ${item.message}\n`
-	}
-
-	if (issues.length > MAX_ISSUES_IN_COMMENT) {
-		body += `\n... and ${issues.length - MAX_ISSUES_IN_COMMENT} more issues\n`
-	}
-
-	body += `\`\`\`
-
-</details>
-
----
-*Posted by https://github.com/tempoxyz/lints*`
-
-	return body
-}
-
-describe('generateComment', () => {
+describe('generateCommentBody', () => {
 	it('should generate success comment when no issues', () => {
-		const comment = generateComment([], 0)
+		const comment = generateCommentBody([], 0)
 
 		expect(comment).toContain(COMMENT_SIGNATURE)
 		expect(comment).toContain('[PASS] Tempo Lint Results')
@@ -88,17 +31,18 @@ describe('generateComment', () => {
 			},
 		]
 
-		const comment = generateComment(issues, 2)
+		const comment = generateCommentBody(issues, 2)
 
 		expect(comment).toContain(COMMENT_SIGNATURE)
 		expect(comment).toContain('## Tempo Lint Results')
-		expect(comment).toContain('Found **2** issue(s)')
+		expect(comment).toContain('### Summary')
+		expect(comment).toContain('Found **2** issue(s) across **2** file(s)')
 		expect(comment).toContain('| Errors | 1 |')
 		expect(comment).toContain('| Warnings | 1 |')
 		expect(comment).toContain('| Hints | 0 |')
 	})
 
-	it('should include issue details in code block', () => {
+	it('should include issue details grouped by rule', () => {
 		const issues: LintIssue[] = [
 			{
 				ruleId: 'no-dbg-macro',
@@ -110,35 +54,46 @@ describe('generateComment', () => {
 			},
 		]
 
-		const comment = generateComment(issues, 1)
+		const comment = generateCommentBody(issues, 1)
 
-		expect(comment).toContain('crates/core/src/lib.rs:42 [error] no-dbg-macro: Remove dbg! macro')
-		expect(comment).toContain('```')
+		expect(comment).toContain('### Issues by Rule Type')
+		expect(comment).toContain('<code>no-dbg-macro</code>')
+		expect(comment).toContain('`crates/core/src/lib.rs:42` - Remove dbg! macro')
 		expect(comment).toContain('<details>')
-		expect(comment).toContain('View Issues')
+		expect(comment).toContain('### Issues by File')
 	})
 
-	it('should truncate issues when exceeding MAX_ISSUES_IN_COMMENT', () => {
-		// Create more issues than MAX_ISSUES_IN_COMMENT (which is 25)
-		const issues: LintIssue[] = Array.from({ length: 30 }, (_, i) => ({
-			ruleId: `rule-${i}`,
-			severity: 'warning',
-			message: `Issue ${i}`,
-			file: `file${i}.ts`,
-			line: i + 1,
-			column: 1,
-		}))
+	it('should group and truncate issues by rule', () => {
+		// Create 15 issues with the same rule and 5 with another
+		const issues: LintIssue[] = [
+			...Array.from({ length: 15 }, (_, i) => ({
+				ruleId: 'common-rule',
+				severity: 'warning',
+				message: `Issue ${i}`,
+				file: `file${i}.ts`,
+				line: i + 1,
+				column: 1,
+			})),
+			...Array.from({ length: 5 }, (_, i) => ({
+				ruleId: 'rare-rule',
+				severity: 'error',
+				message: `Error ${i}`,
+				file: `error${i}.ts`,
+				line: i + 1,
+				column: 1,
+			})),
+		]
 
-		const comment = generateComment(issues, 30)
+		const comment = generateCommentBody(issues, 20)
 
-		// Should only show first 25 issues
-		expect(comment).toContain('rule-0')
-		expect(comment).toContain('rule-24')
-		expect(comment).not.toContain('rule-25')
-		expect(comment).not.toContain('rule-29')
+		// Should show rule groupings
+		expect(comment).toContain('<code>common-rule</code>')
+		expect(comment).toContain('(15 occurrences)')
+		expect(comment).toContain('<code>rare-rule</code>')
+		expect(comment).toContain('(5 occurrences)')
 
-		// Should show truncation message
-		expect(comment).toContain('... and 5 more issues')
+		// Should truncate common-rule to 10 issues
+		expect(comment).toContain('*... and 5 more*')
 	})
 
 	it('should include footer with link', () => {
@@ -153,7 +108,7 @@ describe('generateComment', () => {
 			},
 		]
 
-		const comment = generateComment(issues, 1)
+		const comment = generateCommentBody(issues, 1)
 
 		expect(comment).toContain('Posted by https://github.com/tempoxyz/lints')
 	})
@@ -168,7 +123,7 @@ describe('generateComment', () => {
 			{ ruleId: 'r6', severity: 'hint', message: 'Hint 1', file: 'f6.ts', line: 6, column: 1 },
 		]
 
-		const comment = generateComment(issues, 6)
+		const comment = generateCommentBody(issues, 6)
 
 		expect(comment).toContain('| Errors | 3 |')
 		expect(comment).toContain('| Warnings | 2 |')
@@ -187,7 +142,7 @@ describe('generateComment', () => {
 			},
 		]
 
-		const comment = generateComment(issues, 1)
+		const comment = generateCommentBody(issues, 1)
 
 		expect(comment).toContain('<html>')
 		expect(comment).toContain('&')
@@ -202,8 +157,3 @@ describe('COMMENT_SIGNATURE', () => {
 	})
 })
 
-describe('MAX_ISSUES_IN_COMMENT', () => {
-	it('should be a reasonable limit', () => {
-		expect(MAX_ISSUES_IN_COMMENT).toBe(25)
-	})
-})
