@@ -152,7 +152,9 @@ function outputForGitHubAction(issues: LintIssue[]): void {
 	for (const issue of issues) {
 		const annotationType = issue.severity === 'error' ? 'error' : 'warning'
 		// Format: ::warning file={name},line={line},col={col}::{message}
-		console.log(`::${annotationType} file=${issue.file},line=${issue.line},col=${issue.column}::${issue.ruleId}: ${issue.message}`)
+		console.log(
+			`::${annotationType} file=${issue.file},line=${issue.line},col=${issue.column}::${issue.ruleId}: ${issue.message}`,
+		)
 	}
 
 	// Output summary
@@ -171,7 +173,8 @@ function outputForGitHubAction(issues: LintIssue[]): void {
 	} else {
 		// Detailed output with file:line
 		for (const issue of issues) {
-			const prefix = issue.severity === 'error' ? '[ERROR]' : issue.severity === 'warning' ? '[WARN]' : '[HINT]'
+			const prefix =
+				issue.severity === 'error' ? '[ERROR]' : issue.severity === 'warning' ? '[WARN]' : '[HINT]'
 			console.log(`${prefix} ${issue.file}:${issue.line}:${issue.column}`)
 			console.log(`  ${issue.ruleId}: ${issue.message}`)
 			if (issue.code) {
