@@ -43,42 +43,18 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: 9
+    - name: Enable Corepack
+      shell: bash
+      run: corepack enable
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: "20"
-
-    - name: Get cache keys
-      id: cache-keys
-      shell: bash
-      run: |
-        echo "PNPM_STORE=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-        # Hash the lockfile for cache key
-        LOCK_HASH=$(sha256sum "${{ github.action_path }}/pnpm-lock.yaml" | cut -d' ' -f1 | head -c 16)
-        echo "LOCK_HASH=$LOCK_HASH" >> $GITHUB_OUTPUT
-
-    - name: Cache pnpm store
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.cache-keys.outputs.PNPM_STORE }}
-        key: tempo-lints-pnpm-store-${{ runner.os }}-${{ steps.cache-keys.outputs.LOCK_HASH }}
-        restore-keys: |
-          tempo-lints-pnpm-store-${{ runner.os }}-
-
-    - name: Cache node_modules (includes sg binary)
-      id: cache-node-modules
-      uses: actions/cache@v4
-      with:
-        path: ${{ github.action_path }}/node_modules
-        key: tempo-lints-node-modules-${{ runner.os }}-${{ steps.cache-keys.outputs.LOCK_HASH }}
+        cache: "pnpm"
+        cache-dependency-path: ${{ github.action_path }}/pnpm-lock.yaml
 
     - name: Install tempo-lints dependencies
-      if: steps.cache-node-modules.outputs.cache-hit != 'true'
       shell: bash
       run: cd "${{ github.action_path }}" && pnpm install --frozen-lockfile
 
@@ -93,8 +69,14 @@ runs:
           SCAN_PATH="${{ github.workspace }}"
         fi
 
-        # Build CLI args
-        CLI_ARGS="${{ inputs.language }} $SCAN_PATH --github-action"
+        # Build CLI args - use JSON output if PR comment is needed
+        if [ "${{ inputs.post-comment }}" = "true" ] && [ "${{ github.event_name }}" = "pull_request" ]; then
+          OUTPUT_FORMAT="--json"
+        else
+          OUTPUT_FORMAT="--github-action"
+        fi
+
+        CLI_ARGS="${{ inputs.language }} $SCAN_PATH $OUTPUT_FORMAT"
 
         if [ -n "${{ inputs.exclude-rules }}" ]; then
           CLI_ARGS="$CLI_ARGS --exclude ${{ inputs.exclude-rules }}"
@@ -108,9 +90,14 @@ runs:
         echo "Scanning: $SCAN_PATH"
         echo "CLI args: $CLI_ARGS"
 
-        # Run lint with --github-action flag (outputs annotations and summary)
+        # Run lint and capture output
+        OUTPUT_FILE="${{ runner.temp }}/tempo-lints-output.json"
         set +e
-        pnpm --dir "${{ github.action_path }}" exec tsx "${{ github.action_path }}/bin/tempo-lints.ts" $CLI_ARGS
+        if [ "$OUTPUT_FORMAT" = "--json" ]; then
+          pnpm --dir "${{ github.action_path }}" exec tsx "${{ github.action_path }}/bin/tempo-lints.ts" $CLI_ARGS > "$OUTPUT_FILE" 2>/dev/null
+        else
+          pnpm --dir "${{ github.action_path }}" exec tsx "${{ github.action_path }}/bin/tempo-lints.ts" $CLI_ARGS
+        fi
         EXIT_CODE=$?
         set -e
 
@@ -122,11 +109,11 @@ runs:
 
         echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
         echo "has_errors=$HAS_ERRORS" >> $GITHUB_OUTPUT
+        echo "output_file=$OUTPUT_FILE" >> $GITHUB_OUTPUT
 
     - name: Post PR comment
       if: inputs.post-comment == 'true' && github.event_name == 'pull_request'
       shell: bash
-      working-directory: ${{ github.workspace }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
@@ -135,26 +122,10 @@ runs:
           exit 0
         fi
 
-        # Resolve scan path (default to workspace root)
-        SCAN_PATH="${{ inputs.path }}"
-        if [ "$SCAN_PATH" = "." ]; then
-          SCAN_PATH="${{ github.workspace }}"
-        fi
+        OUTPUT_FILE="${{ steps.run-lint.outputs.output_file }}"
 
-        # Build CLI args for JSON output
-        CLI_ARGS="${{ inputs.language }} $SCAN_PATH --json"
-
-        if [ -n "${{ inputs.exclude-rules }}" ]; then
-          CLI_ARGS="$CLI_ARGS --exclude ${{ inputs.exclude-rules }}"
-        fi
-
-        # Run lint with --json to get structured output for comment
-        OUTPUT_FILE="${{ runner.temp }}/tempo-lints-comment.json"
-        set +e
-        pnpm --dir "${{ github.action_path }}" exec tsx "${{ github.action_path }}/bin/tempo-lints.ts" $CLI_ARGS > "$OUTPUT_FILE" 2>/dev/null
-        set -e
-
-        TOTAL_ISSUES=$(cat "$OUTPUT_FILE" | node -p "try { JSON.parse(require('fs').readFileSync(0,'utf8')).length } catch { 0 }" 2>/dev/null || echo "0")
+        # Count issues from JSON output
+        TOTAL_ISSUES=$(node -p "try { JSON.parse(require('fs').readFileSync('$OUTPUT_FILE','utf8')).length } catch { 0 }" 2>/dev/null || echo "0")
 
         pnpm --dir "${{ github.action_path }}" exec tsx "${{ github.action_path }}/scripts/post-pr-comment.ts" \
           "$OUTPUT_FILE" \
