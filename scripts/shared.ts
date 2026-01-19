@@ -86,6 +86,14 @@ function isAstGrepIssueArray(value: unknown): value is AstGrepIssue[] {
 }
 
 function normalizeIssue(issue: AstGrepIssue): LintIssue {
+	// Debug: log if range is missing
+	if (!issue.range?.start?.line) {
+		console.warn(
+			`[tempo-lints] Warning: Missing line number for ${issue.file}. Issue data:`,
+			JSON.stringify(issue).substring(0, 200),
+		)
+	}
+
 	return {
 		ruleId: issue.ruleId ?? 'unknown',
 		severity: issue.severity ?? 'warning',
