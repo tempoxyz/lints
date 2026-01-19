@@ -302,7 +302,7 @@ export function groupByRule(issues: LintIssue[]): Record<string, LintIssue[]> {
  * @returns The word with appropriate form
  */
 export function pluralize(count: number, singular: string, plural?: string): string {
-	return count === 1 ? singular : plural ?? `${singular}s`
+	return count === 1 ? singular : (plural ?? `${singular}s`)
 }
 
 export function warn(message: string): void {

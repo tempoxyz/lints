@@ -156,4 +156,3 @@ describe('COMMENT_SIGNATURE', () => {
 		expect(COMMENT_SIGNATURE).toBe('<!-- tempo-lints-comment -->')
 	})
 })
-
