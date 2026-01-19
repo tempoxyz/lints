@@ -43,18 +43,42 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Enable Corepack
-      shell: bash
-      run: corepack enable
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: "20"
-        cache: "pnpm"
-        cache-dependency-path: ${{ github.action_path }}/pnpm-lock.yaml
+
+    - name: Get cache keys
+      id: cache-keys
+      shell: bash
+      run: |
+        echo "PNPM_STORE=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+        # Hash the lockfile for cache key
+        LOCK_HASH=$(sha256sum "${{ github.action_path }}/pnpm-lock.yaml" | cut -d' ' -f1 | head -c 16)
+        echo "LOCK_HASH=$LOCK_HASH" >> $GITHUB_OUTPUT
+
+    - name: Cache pnpm store
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.cache-keys.outputs.PNPM_STORE }}
+        key: tempo-lints-pnpm-store-${{ runner.os }}-${{ steps.cache-keys.outputs.LOCK_HASH }}
+        restore-keys: |
+          tempo-lints-pnpm-store-${{ runner.os }}-
+
+    - name: Cache node_modules (includes sg binary)
+      id: cache-node-modules
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.action_path }}/node_modules
+        key: tempo-lints-node-modules-${{ runner.os }}-${{ steps.cache-keys.outputs.LOCK_HASH }}
 
     - name: Install tempo-lints dependencies
+      if: steps.cache-node-modules.outputs.cache-hit != 'true'
       shell: bash
       run: cd "${{ github.action_path }}" && pnpm install --frozen-lockfile
 
