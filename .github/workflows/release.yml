@@ -56,29 +56,38 @@ jobs:
       - name: Create GitHub Release
         if: steps.changesets.outputs.published == 'true'
         run: |
-          # Get the version from package.json using jq
+          # Get the version from package.json
           VERSION=$(jq -r '.version' package.json)
           TAG="v${VERSION}"
+          CHANGESET_TAG="@tempoxyz/lints@${VERSION}"
 
-          # Wait for tag to be available (changesets creates it asynchronously)
-          # Total wait time: 20 seconds (10 attempts × 2 seconds)
+          # Changesets creates tags like @tempoxyz/lints@0.1.1
+          # We need to create vX.Y.Z tags for GitHub Actions compatibility
+          echo "Looking for changeset tag: $CHANGESET_TAG"
+
+          # Wait for changeset tag to be available
           MAX_ATTEMPTS=10
           SLEEP_SECONDS=2
-          echo "Waiting for tag $TAG to be available..."
           for i in $(seq 1 $MAX_ATTEMPTS); do
-            if git rev-parse "$TAG" >/dev/null 2>&1; then
-              echo "Tag $TAG found"
+            git fetch --tags origin
+            if git rev-parse "$CHANGESET_TAG" >/dev/null 2>&1; then
+              echo "Changeset tag $CHANGESET_TAG found"
               break
             fi
             if [ $i -eq $MAX_ATTEMPTS ]; then
-              echo "Error: Tag $TAG not found after waiting ${MAX_ATTEMPTS} attempts ($(($MAX_ATTEMPTS * $SLEEP_SECONDS)) seconds total)"
+              echo "Error: Tag $CHANGESET_TAG not found after $MAX_ATTEMPTS attempts"
               exit 1
             fi
             echo "Attempt $i/$MAX_ATTEMPTS: Tag not yet available, waiting..."
             sleep $SLEEP_SECONDS
           done
 
-          # Create GitHub release using gh CLI
+          # Create the vX.Y.Z tag pointing to the same commit
+          echo "Creating tag $TAG from $CHANGESET_TAG"
+          git tag "$TAG" "$CHANGESET_TAG"
+          git push origin "$TAG"
+
+          # Create GitHub release using the vX.Y.Z tag
           gh release create "$TAG" \
             --title "$TAG" \
             --notes "See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details."
