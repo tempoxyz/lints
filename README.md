@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: stripe/tempo-lints@v1
+      - uses: tempoxyz/lints@v0
         with:
           language: rust  # or 'typescript' or 'all'
 ```
@@ -63,26 +63,33 @@ jobs:
 | `post-comment` | | `false` | Post results as PR comment |
 | `github-token` | | — | Required if `post-comment: true` |
 
-### npm / npx
+### npm / npx (via GitHub)
+
+Install directly from GitHub:
 
 ```bash
-# Run directly with npx
-npx @stripe/tempo-lints rust ./src
-npx @stripe/tempo-lints typescript
-npx @stripe/tempo-lints all --json
+# Install from GitHub
+npm install github:tempoxyz/lints
 
-# Or install globally
-npm install -g @stripe/tempo-lints
-tempo-lints rust ./src
+# Run with npx
+npx @tempoxyz/lints rust ./src
+npx @tempoxyz/lints typescript
+npx @tempoxyz/lints all --json
+```
+
+Or use npx directly without installing:
+
+```bash
+npx github:tempoxyz/lints rust ./src
 ```
 
 ### Vendoring (for offline/locked environments)
 
 ```bash
 # Using the CLI vendor command (recommended)
-npx @stripe/tempo-lints vendor --lang rust --dest /path/to/your-project
-npx @stripe/tempo-lints vendor --lang typescript --dest /path/to/your-project
-npx @stripe/tempo-lints vendor --lang all --dest /path/to/your-project
+npx @tempoxyz/lints vendor --lang rust --dest /path/to/your-project
+npx @tempoxyz/lints vendor --lang typescript --dest /path/to/your-project
+npx @tempoxyz/lints vendor --lang all --dest /path/to/your-project
 ```
 
 This copies both language-specific rules and shared rules to `.ast-grep/` and generates an `sgconfig.yml`.
@@ -96,7 +103,7 @@ ast-grep scan --config sgconfig.yml
 ## CLI Usage
 
 ```
-tempo-lints <language> [path] [options]
+@tempoxyz/lints <language> [path] [options]
 
 Arguments:
   language     Required: rust, typescript, or all
@@ -111,15 +118,15 @@ Options:
   --version, -v       Show version
 
 Examples:
-  tempo-lints rust
-  tempo-lints typescript ./src
-  tempo-lints all --json
-  tempo-lints rust --exclude no-dbg-macro,no-unwrap-in-lib
-  tempo-lints typescript --fix
-  tempo-lints rust --github-action   # For CI with annotations
+  npx @tempoxyz/lints rust
+  npx @tempoxyz/lints typescript ./src
+  npx @tempoxyz/lints all --json
+  npx @tempoxyz/lints rust --exclude no-dbg-macro,no-unwrap-in-lib
+  npx @tempoxyz/lints typescript --fix
+  npx @tempoxyz/lints rust --github-action   # For CI with annotations
 
 Vendor Subcommand:
-  tempo-lints vendor --lang <language> --dest <path>
+  npx @tempoxyz/lints vendor --lang <language> --dest <path>
 
   Copy lint rules to a destination project for offline/locked usage.
 
@@ -128,8 +135,8 @@ Vendor Subcommand:
     --dest <path>       Destination project path
 
   Examples:
-    tempo-lints vendor --lang rust --dest ./my-project
-    tempo-lints vendor --lang all --dest /path/to/project
+    npx @tempoxyz/lints vendor --lang rust --dest ./my-project
+    npx @tempoxyz/lints vendor --lang all --dest /path/to/project
 ```
 
 ## Disabling Rules
@@ -188,9 +195,32 @@ npm run check
 ast-grep scan --config src/rust/sgconfig.yml /path/to/code
 ```
 
+## Versioning
+
+This package uses GitHub releases for distribution. When using the GitHub Action, you can pin to major versions:
+
+```yaml
+- uses: tempoxyz/lints@v0  # Automatically uses latest v0.x.x
+- uses: tempoxyz/lints@v0.2.1  # Pin to specific version
+- uses: tempoxyz/lints@main  # Use latest from main branch (not recommended)
+```
+
+Major version tags (`v0`, `v1`, etc.) are automatically updated to point to the latest release in that major version.
+
 ## Contributing
 
+We welcome contributions! Please see our [Contributing Guide](.github/CONTRIBUTING.md) for details.
+
+**Quick start:**
+
 1. Fork this repo
-2. Add or modify rules
-3. Run `npm test` to verify
-4. Open a PR with description of the rule and rationale
+2. Make your changes
+3. Create a changeset: `pnpm changeset`
+4. Run tests: `pnpm test`
+5. Open a PR
+
+See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for detailed instructions on:
+- Development setup
+- Creating changesets
+- Adding new rules
+- Release process
