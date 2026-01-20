@@ -37,7 +37,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Create Release PR or Publish
+      - name: Run tests and linting
+        run: |
+          pnpm test
+          pnpm lint
+
+      - name: Create Release PR or Tag
         id: changesets
         uses: changesets/action@v1
         with:
@@ -51,14 +56,31 @@ jobs:
       - name: Create GitHub Release
         if: steps.changesets.outputs.published == 'true'
         run: |
-          # Get the version from package.json
-          VERSION=$(node -p "require('./package.json').version")
+          # Get the version from package.json using jq
+          VERSION=$(jq -r '.version' package.json)
           TAG="v${VERSION}"
+
+          # Wait for tag to be available (changesets creates it asynchronously)
+          # Total wait time: 20 seconds (10 attempts × 2 seconds)
+          MAX_ATTEMPTS=10
+          SLEEP_SECONDS=2
+          echo "Waiting for tag $TAG to be available..."
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            if git rev-parse "$TAG" >/dev/null 2>&1; then
+              echo "Tag $TAG found"
+              break
+            fi
+            if [ $i -eq $MAX_ATTEMPTS ]; then
+              echo "Error: Tag $TAG not found after waiting ${MAX_ATTEMPTS} attempts ($(($MAX_ATTEMPTS * $SLEEP_SECONDS)) seconds total)"
+              exit 1
+            fi
+            echo "Attempt $i/$MAX_ATTEMPTS: Tag not yet available, waiting..."
+            sleep $SLEEP_SECONDS
+          done
 
           # Create GitHub release using gh CLI
           gh release create "$TAG" \
             --title "$TAG" \
-            --notes "See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details." \
-            --verify-tag
+            --notes "See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
