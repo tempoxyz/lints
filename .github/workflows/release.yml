@@ -42,45 +42,44 @@ jobs:
           pnpm test
           pnpm lint
 
-      - name: Create Release PR or Tag
+      - name: Create Release PR or Publish
         id: changesets
         uses: changesets/action@v1
         with:
           version: pnpm run version
-          publish: pnpm run release
           commit: "chore: version packages"
           title: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create GitHub Release
-        if: steps.changesets.outputs.published == 'true'
+      - name: Create Git Tag and GitHub Release
+        if: steps.changesets.outputs.hasChangesets == 'false' && steps.changesets.outputs.pullRequestNumber == ''
         run: |
           # Get the version from package.json using jq
           VERSION=$(jq -r '.version' package.json)
           TAG="v${VERSION}"
 
-          # Wait for tag to be available (changesets creates it asynchronously)
-          # Total wait time: 20 seconds (10 attempts × 2 seconds)
-          MAX_ATTEMPTS=10
-          SLEEP_SECONDS=2
-          echo "Waiting for tag $TAG to be available..."
-          for i in $(seq 1 $MAX_ATTEMPTS); do
-            if git rev-parse "$TAG" >/dev/null 2>&1; then
-              echo "Tag $TAG found"
-              break
-            fi
-            if [ $i -eq $MAX_ATTEMPTS ]; then
-              echo "Error: Tag $TAG not found after waiting ${MAX_ATTEMPTS} attempts ($(($MAX_ATTEMPTS * $SLEEP_SECONDS)) seconds total)"
-              exit 1
-            fi
-            echo "Attempt $i/$MAX_ATTEMPTS: Tag not yet available, waiting..."
-            sleep $SLEEP_SECONDS
-          done
+          # Check if this tag already exists
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, skipping release creation"
+            exit 0
+          fi
+
+          echo "Creating tag $TAG"
+
+          # Create and push the git tag
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+          echo "Tag $TAG created and pushed"
 
           # Create GitHub release using gh CLI
           gh release create "$TAG" \
             --title "$TAG" \
             --notes "See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details."
+
+          echo "GitHub release created for $TAG"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

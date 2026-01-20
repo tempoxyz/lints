@@ -26,8 +26,7 @@
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check",
 		"changeset": "changeset",
-		"version": "changeset version",
-		"release": "changeset tag"
+		"version": "changeset version"
 	},
 	"repository": {
 		"type": "git",
