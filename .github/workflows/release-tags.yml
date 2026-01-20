@@ -1,0 +1,69 @@
+name: Update Release Tags
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  update-tags:
+    name: Update major version tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update major version tag
+        run: |
+          # Get the release tag (e.g., v1.2.3)
+          TAG="${{ github.event.release.tag_name }}"
+
+          # Extract major version (e.g., v1)
+          if [[ $TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            MAJOR_TAG="v${BASH_REMATCH[1]}"
+
+            echo "Updating $MAJOR_TAG to point to $TAG"
+
+            # Safety check: ensure we're not downgrading
+            if git rev-parse "$MAJOR_TAG" >/dev/null 2>&1; then
+              echo "Existing $MAJOR_TAG found, verifying this is not a downgrade..."
+              CURRENT_COMMIT=$(git rev-list -n 1 "$MAJOR_TAG")
+              NEW_COMMIT=$(git rev-list -n 1 "$TAG")
+
+              # Check if new tag is ancestor of current (would be a downgrade)
+              if git merge-base --is-ancestor "$NEW_COMMIT" "$CURRENT_COMMIT" 2>/dev/null; then
+                if [ "$NEW_COMMIT" != "$CURRENT_COMMIT" ]; then
+                  echo "Error: $TAG ($NEW_COMMIT) is an ancestor of current $MAJOR_TAG ($CURRENT_COMMIT)"
+                  echo "This would be a downgrade. Aborting."
+                  exit 1
+                fi
+              fi
+              echo "Safety check passed"
+            else
+              echo "No existing $MAJOR_TAG found, creating new tag"
+            fi
+
+            # Create and force push the major version tag
+            git tag -f "$MAJOR_TAG" "$TAG"
+            if ! git push --force origin "$MAJOR_TAG"; then
+              echo "Error: Failed to push $MAJOR_TAG"
+              exit 1
+            fi
+
+            echo "Successfully updated $MAJOR_TAG to $TAG"
+          else
+            echo "Tag $TAG does not match expected format (vX.Y.Z)"
+            exit 1
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

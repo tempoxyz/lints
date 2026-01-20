@@ -1,10 +1,10 @@
 {
-	"name": "@stripe/tempo-lints",
+	"name": "@tempoxyz/lints",
 	"version": "0.1.0",
 	"description": "Shared ast-grep lint rules for Tempo projects",
 	"type": "module",
 	"bin": {
-		"tempo-lints": "./bin/tempo-lints.ts"
+		"@tempoxyz/lints": "./bin/tempo-lints.ts"
 	},
 	"files": [
 		"bin/",
@@ -25,11 +25,13 @@
 		"check:biome": "biome check --write --unsafe",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check",
-		"release": "npm publish --provenance --access public"
+		"changeset": "changeset",
+		"version": "changeset version",
+		"release": "changeset tag"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/stripe/tempo-lints.git"
+		"url": "git+https://github.com/tempoxyz/lints.git"
 	},
 	"keywords": [
 		"ast-grep",
@@ -42,11 +44,12 @@
 	"author": "Tempo Labs",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/stripe/tempo-lints/issues"
+		"url": "https://github.com/tempoxyz/lints/issues"
 	},
-	"homepage": "https://github.com/stripe/tempo-lints#readme",
+	"homepage": "https://github.com/tempoxyz/lints#readme",
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.11",
+		"@changesets/cli": "^2.27.1",
 		"@types/node": "^22.10.0",
 		"tsx": "^4.21.0",
 		"typescript": "^5.7.3",
