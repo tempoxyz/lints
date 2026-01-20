@@ -1,5 +1,11 @@
 # @tempoxyz/lints
 
+## 0.1.1
+
+### Patch Changes
+
+- 03db5f9: initialize github package
+
 ## 0.1.0
 
 ### Minor Changes
