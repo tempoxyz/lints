@@ -1,6 +1,6 @@
 {
 	"name": "@tempoxyz/lints",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Shared ast-grep lint rules for Tempo projects",
 	"type": "module",
 	"bin": {
