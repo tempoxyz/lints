@@ -15,4 +15,4 @@ note: |
   - Line: add `// ast-grep-ignore: no-dbg-macro` on the line before
 rule:
   pattern: dbg!($$$ARGS)
-fix: $$$ARGS
+fix: ($$$ARGS)

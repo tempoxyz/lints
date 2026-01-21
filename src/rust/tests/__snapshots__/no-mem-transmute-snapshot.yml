@@ -1,6 +1,34 @@
 id: no-mem-transmute
 snapshots:
   ? |
+    let a = std::mem::transmute::<u32, i32>(value);
+  : labels:
+    - source: std::mem::transmute::<u32, i32>(value)
+      style: primary
+      start: 8
+      end: 46
+  ? |
+    let b = mem::transmute::<[u8; 4], u32>(bytes);
+  : labels:
+    - source: mem::transmute::<[u8; 4], u32>(bytes)
+      style: primary
+      start: 8
+      end: 45
+  ? |
+    let c = core::mem::transmute(value);
+  : labels:
+    - source: core::mem::transmute(value)
+      style: primary
+      start: 8
+      end: 35
+  ? |
+    let d = core::mem::transmute::<u8, i8>(byte);
+  : labels:
+    - source: core::mem::transmute::<u8, i8>(byte)
+      style: primary
+      start: 8
+      end: 44
+  ? |
     let x = std::mem::transmute(value);
   : labels:
     - source: std::mem::transmute(value)
@@ -14,3 +42,10 @@ snapshots:
       style: primary
       start: 8
       end: 29
+  ? |
+    let z = transmute(value);
+  : labels:
+    - source: transmute(value)
+      style: primary
+      start: 8
+      end: 24

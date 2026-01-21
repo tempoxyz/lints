@@ -10,13 +10,52 @@ note: |
   ```rust
   // SAFETY: We have verified the pointer is valid and aligned
   unsafe { *ptr }
+  
+  // SAFETY: caller guarantees ptr is valid
+  let x = unsafe { *ptr };
   ```
   
-  This is a reminder rule - review each unsafe block to ensure it has
-  proper documentation. Some may already have SAFETY comments that
-  ast-grep cannot detect due to formatting.
+  The SAFETY comment must immediately precede the unsafe block or its
+  enclosing statement (no intervening statements).
   
   To disable this rule:
   - Line: add `// ast-grep-ignore: unsafe-needs-safety-comment` on the line before
 rule:
   kind: unsafe_block
+  not:
+    any:
+      # SAFETY comment immediately before the unsafe block itself
+      - follows:
+          stopBy: neighbor
+          kind: line_comment
+          regex: 'SAFETY:'
+      - follows:
+          stopBy: neighbor
+          kind: block_comment
+          regex: 'SAFETY:'
+      # SAFETY comment before enclosing let_declaration
+      - inside:
+          kind: let_declaration
+          follows:
+            stopBy: neighbor
+            kind: line_comment
+            regex: 'SAFETY:'
+      - inside:
+          kind: let_declaration
+          follows:
+            stopBy: neighbor
+            kind: block_comment
+            regex: 'SAFETY:'
+      # SAFETY comment before enclosing expression_statement
+      - inside:
+          kind: expression_statement
+          follows:
+            stopBy: neighbor
+            kind: line_comment
+            regex: 'SAFETY:'
+      - inside:
+          kind: expression_statement
+          follows:
+            stopBy: neighbor
+            kind: block_comment
+            regex: 'SAFETY:'

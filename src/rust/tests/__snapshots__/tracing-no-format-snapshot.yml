@@ -1,6 +1,13 @@
 id: tracing-no-format
 snapshots:
   ? |
+    debug!(format!("{}", value));
+  : labels:
+    - source: debug!(format!("{}", value))
+      style: primary
+      start: 0
+      end: 28
+  ? |
     info!("Value: {}", format!("{:?}", x));
   : labels:
     - source: 'info!("Value: {}", format!("{:?}", x))'
@@ -15,12 +22,26 @@ snapshots:
       start: 0
       end: 50
   ? |
+    tracing::error!(format!("Error: {}"), err, "context");
+  : labels:
+    - source: 'tracing::error!(format!("Error: {}"), err, "context")'
+      style: primary
+      start: 0
+      end: 53
+  ? |
     tracing::info!("User {}", format!("{:?}", user));
   : labels:
     - source: tracing::info!("User {}", format!("{:?}", user))
       style: primary
       start: 0
       end: 48
+  ? |
+    tracing::info!(format!("User: {:?}", user));
+  : labels:
+    - source: 'tracing::info!(format!("User: {:?}", user))'
+      style: primary
+      start: 0
+      end: 43
   ? |
     warn!("Warning: {}", format!("{}", msg));
   : labels:

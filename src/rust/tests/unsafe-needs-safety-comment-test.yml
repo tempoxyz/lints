@@ -1,14 +1,55 @@
 id: unsafe-needs-safety-comment
 valid:
+  # No unsafe at all
   - |
     fn foo() {
         let x = 1;
     }
 
+  # Line comment with SAFETY before unsafe block
+  - |
+    fn foo(ptr: *const i32) -> i32 {
+        // SAFETY: ptr is valid and aligned
+        unsafe { *ptr }
+    }
+
+  # Block comment with SAFETY
+  - |
+    fn foo(ptr: *const i32) -> i32 {
+        /* SAFETY: ptr is valid */
+        unsafe { *ptr }
+    }
+
+  # SAFETY comment before let statement containing unsafe
+  - |
+    fn foo(ptr: *const i32) -> i32 {
+        // SAFETY: ptr is valid
+        let x = unsafe { *ptr };
+        x
+    }
+
 invalid:
+  # No comment at all
   - |
     fn foo() {
         unsafe { *ptr }
     }
+
+  # Top-level unsafe without comment
   - |
     unsafe { std::ptr::read(ptr) }
+
+  # Wrong comment (not SAFETY)
+  - |
+    fn foo(ptr: *const i32) -> i32 {
+        // This is probably fine
+        unsafe { *ptr }
+    }
+
+  # SAFETY comment for wrong block (intervening statement)
+  - |
+    fn foo(ptr: *const i32) -> i32 {
+        // SAFETY: ptr is valid
+        let x = 1;
+        unsafe { *ptr }
+    }

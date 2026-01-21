@@ -4,9 +4,17 @@ valid:
     tracing::debug!(value = ?x, "debugging");
   - |
     println!("{:?}", x);
+  - |
+    log::debug!("value: {:?}", x);
 
 invalid:
   - |
     dbg!(x);
   - |
     dbg!(x, y, z);
+  - |
+    dbg!();
+  - |
+    let result = dbg!(compute());
+  - |
+    foo(dbg!(x));

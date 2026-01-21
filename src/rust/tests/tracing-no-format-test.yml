@@ -6,8 +6,11 @@ valid:
     tracing::debug!(count = count, "Processing items");
   - |
     info!("Simple message");
+  - |
+    tracing::warn!("Plain warning");
 
 invalid:
+  # format!() as last argument
   - |
     tracing::info!("User {}", format!("{:?}", user));
   - |
@@ -16,3 +19,11 @@ invalid:
     info!("Value: {}", format!("{:?}", x));
   - |
     warn!("Warning: {}", format!("{}", msg));
+  # format!() as first/only argument
+  - |
+    tracing::info!(format!("User: {:?}", user));
+  - |
+    debug!(format!("{}", value));
+  # format!() as first argument with trailing args
+  - |
+    tracing::error!(format!("Error: {}"), err, "context");

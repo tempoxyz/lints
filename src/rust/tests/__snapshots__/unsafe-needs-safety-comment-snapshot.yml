@@ -10,6 +10,27 @@ snapshots:
       start: 15
       end: 30
   ? |
+    fn foo(ptr: *const i32) -> i32 {
+        // SAFETY: ptr is valid
+        let x = 1;
+        unsafe { *ptr }
+    }
+  : labels:
+    - source: unsafe { *ptr }
+      style: primary
+      start: 80
+      end: 95
+  ? |
+    fn foo(ptr: *const i32) -> i32 {
+        // This is probably fine
+        unsafe { *ptr }
+    }
+  : labels:
+    - source: unsafe { *ptr }
+      style: primary
+      start: 66
+      end: 81
+  ? |
     unsafe { *ptr }
   : labels:
     - source: unsafe { *ptr }
