@@ -4,9 +4,21 @@ valid:
     let x = u32::from_ne_bytes(bytes);
   - |
     let y = value as i32;
+  - |
+    let z = bytemuck::cast(value);
 
 invalid:
   - |
     let x = std::mem::transmute(value);
   - |
     let y = mem::transmute(bytes);
+  - |
+    let z = transmute(value);
+  - |
+    let a = std::mem::transmute::<u32, i32>(value);
+  - |
+    let b = mem::transmute::<[u8; 4], u32>(bytes);
+  - |
+    let c = core::mem::transmute(value);
+  - |
+    let d = core::mem::transmute::<u8, i8>(byte);

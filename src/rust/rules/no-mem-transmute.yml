@@ -16,5 +16,10 @@ note: |
 rule:
   any:
     - pattern: std::mem::transmute($$$ARGS)
+    - pattern: std::mem::transmute::<$$$T>($$$ARGS)
+    - pattern: core::mem::transmute($$$ARGS)
+    - pattern: core::mem::transmute::<$$$T>($$$ARGS)
     - pattern: mem::transmute($$$ARGS)
+    - pattern: mem::transmute::<$$$T>($$$ARGS)
     - pattern: transmute($$$ARGS)
+    - pattern: transmute::<$$$T>($$$ARGS)

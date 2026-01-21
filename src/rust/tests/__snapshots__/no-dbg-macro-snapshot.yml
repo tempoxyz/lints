@@ -1,9 +1,18 @@
 id: no-dbg-macro
 snapshots:
   ? |
+    dbg!();
+  : fixed: |
+      ();
+    labels:
+    - source: dbg!()
+      style: primary
+      start: 0
+      end: 6
+  ? |
     dbg!(x);
   : fixed: |
-      x;
+      (x);
     labels:
     - source: dbg!(x)
       style: primary
@@ -12,9 +21,27 @@ snapshots:
   ? |
     dbg!(x, y, z);
   : fixed: |
-      x, y, z;
+      (x, y, z);
     labels:
     - source: dbg!(x, y, z)
       style: primary
       start: 0
       end: 13
+  ? |
+    foo(dbg!(x));
+  : fixed: |
+      foo((x));
+    labels:
+    - source: dbg!(x)
+      style: primary
+      start: 4
+      end: 11
+  ? |
+    let result = dbg!(compute());
+  : fixed: |
+      let result = (compute());
+    labels:
+    - source: dbg!(compute())
+      style: primary
+      start: 13
+      end: 28

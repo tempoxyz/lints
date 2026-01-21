@@ -11,8 +11,11 @@ note: |
   - `log::debug!()` if using log crate
   - Remove entirely if not needed
   
+  Note: The auto-fix wraps the result in parentheses to preserve tuple semantics
+  for multi-argument dbg! calls. Review and simplify if needed.
+  
   To disable this rule:
   - Line: add `// ast-grep-ignore: no-dbg-macro` on the line before
 rule:
   pattern: dbg!($$$ARGS)
-fix: $$$ARGS
+fix: ($$$ARGS)

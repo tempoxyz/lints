@@ -8,6 +8,7 @@ note: |
   Bad:
   ```rust
   tracing::info!("User {} logged in", format!("{:?}", user));
+  tracing::info!(user = format!("{:?}", user), "logged in");
   ```
   
   Good:
@@ -21,6 +22,7 @@ note: |
   - Line: add `// ast-grep-ignore: tracing-no-format` on the line before
 rule:
   any:
+    # format!() as last argument
     - pattern: tracing::info!($$$ARGS, format!($$$FMT))
     - pattern: tracing::debug!($$$ARGS, format!($$$FMT))
     - pattern: tracing::warn!($$$ARGS, format!($$$FMT))
@@ -31,3 +33,25 @@ rule:
     - pattern: warn!($$$ARGS, format!($$$FMT))
     - pattern: error!($$$ARGS, format!($$$FMT))
     - pattern: trace!($$$ARGS, format!($$$FMT))
+    # format!() as first/only argument
+    - pattern: tracing::info!(format!($$$FMT))
+    - pattern: tracing::debug!(format!($$$FMT))
+    - pattern: tracing::warn!(format!($$$FMT))
+    - pattern: tracing::error!(format!($$$FMT))
+    - pattern: tracing::trace!(format!($$$FMT))
+    - pattern: info!(format!($$$FMT))
+    - pattern: debug!(format!($$$FMT))
+    - pattern: warn!(format!($$$FMT))
+    - pattern: error!(format!($$$FMT))
+    - pattern: trace!(format!($$$FMT))
+    # format!() as first argument with trailing args
+    - pattern: tracing::info!(format!($$$FMT), $$$ARGS)
+    - pattern: tracing::debug!(format!($$$FMT), $$$ARGS)
+    - pattern: tracing::warn!(format!($$$FMT), $$$ARGS)
+    - pattern: tracing::error!(format!($$$FMT), $$$ARGS)
+    - pattern: tracing::trace!(format!($$$FMT), $$$ARGS)
+    - pattern: info!(format!($$$FMT), $$$ARGS)
+    - pattern: debug!(format!($$$FMT), $$$ARGS)
+    - pattern: warn!(format!($$$FMT), $$$ARGS)
+    - pattern: error!(format!($$$FMT), $$$ARGS)
+    - pattern: trace!(format!($$$FMT), $$$ARGS)
