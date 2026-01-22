@@ -2,6 +2,9 @@ id: no-non-null-assertion
 message: "Avoid non-null assertion (!). Use proper null checking."
 severity: warning
 language: typescript
+ignores:
+  - "**/*.gen.ts"
+  - "**/worker-configuration.d.ts"
 note: |
   The non-null assertion operator (!) tells TypeScript to trust you,
   but it can hide bugs if the value is actually null/undefined.

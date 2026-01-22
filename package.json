@@ -14,16 +14,16 @@
 		"action.yml"
 	],
 	"scripts": {
-		"test": "npm run test:rust && npm run test:typescript && npm run test:shared-rules",
+		"test": "pnpm test:rust && pnpm test:typescript && pnpm test:shared-rules",
 		"test:rust": "sg test --config src/rust/sgconfig.yml",
 		"test:typescript": "sg test --config src/typescript/sgconfig.yml",
 		"test:shared": "sg test --config src/shared/sgconfig.yml",
 		"test:shared-rules": "vitest run",
 		"test:update-snapshots": "sg test --config src/shared/sgconfig.yml --update-all && sg test --config src/rust/sgconfig.yml --update-all && sg test --config src/typescript/sgconfig.yml --update-all",
 		"test:update-shared-snapshots": "sg test --config src/shared/sgconfig.yml --update-all",
-		"check": "npm run typecheck && biome check --write --unsafe",
+		"check": "pnpm typecheck && biome check --write --unsafe",
 		"check:biome": "biome check --write --unsafe",
-		"typecheck": "tsc --noEmit",
+		"typecheck": "tsgo --project tsconfig.json --noEmit",
 		"lint": "biome check",
 		"changeset": "changeset",
 		"version": "changeset version",
@@ -50,17 +50,30 @@
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.11",
 		"@changesets/cli": "^2.27.1",
-		"@types/node": "^22.10.0",
+		"@types/node": "^25.0.10",
+		"@typescript/native-preview": "7.0.0-dev.20260122.4",
 		"tsx": "^4.21.0",
-		"typescript": "^5.7.3",
-		"vitest": "^2.1.9"
+		"typescript": "^5.9.3",
+		"vitest": "^4.0.18"
 	},
 	"dependencies": {
-		"@ast-grep/cli": "~0.25.0",
+		"@ast-grep/cli": "^0.40.5",
 		"commander": "^12.1.0"
 	},
 	"engines": {
 		"node": ">=18"
 	},
-	"packageManager": "pnpm@9.15.4"
+	"devEngines": {
+		"runtime": {
+			"name": "node",
+			"version": "24.12.0",
+			"onFail": "download"
+		}
+	},
+	"packageManager": "pnpm@10.28.1",
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"@ast-grep/cli"
+		]
+	}
 }

@@ -2,6 +2,9 @@ id: no-await-in-loop
 message: "Avoid await inside loops. Consider Promise.all() for parallel execution."
 severity: warning
 language: typescript
+ignores:
+  - "**/*.gen.ts"
+  - "**/worker-configuration.d.ts"
 note: |
   Using await in a loop executes promises sequentially, which is often
   slower than running them in parallel.

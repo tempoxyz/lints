@@ -2,6 +2,9 @@ id: no-leading-whitespace-strings
 message: "String literals should not start with leading whitespace. Found: '$CONTENT'"
 severity: warning
 language: typescript
+ignores:
+  - "**/*.gen.ts"
+  - "**/worker-configuration.d.ts"
 note: |
   Strings that start with a single space followed by text like " foo" are often 
   unintentional typos and can cause display issues.

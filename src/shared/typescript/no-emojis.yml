@@ -15,3 +15,5 @@ rule:
 ignores:
   - "**/test_fixtures/**"
   - "**/testdata/**"
+  - "**/*.gen.ts"
+  - "**/worker-configuration.d.ts"
