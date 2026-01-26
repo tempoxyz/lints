@@ -2,6 +2,9 @@ id: prefer-const
 message: "Use 'const' instead of 'let' when variable is never reassigned."
 severity: hint
 language: typescript
+ignores:
+  - "**/*.gen.ts"
+  - "**/worker-configuration.d.ts"
 note: |
   `const` signals intent that a variable won't be reassigned.
   It helps prevent accidental reassignment bugs.
@@ -14,5 +17,8 @@ note: |
 rule:
   pattern: let $NAME = $VALUE;
   not:
-    follows:
-      pattern: $NAME = $OTHER
+    any:
+      - inside:
+          kind: for_statement
+      - follows:
+          pattern: $NAME = $OTHER

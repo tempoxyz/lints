@@ -19,3 +19,5 @@ ignores:
   - "**/*.test.ts"
   - "**/*.spec.ts"
   - "**/scripts/**"
+  - "**/*.gen.ts"
+  - "**/worker-configuration.d.ts"

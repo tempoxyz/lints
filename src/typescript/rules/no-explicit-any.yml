@@ -2,6 +2,9 @@ id: no-explicit-any
 message: "Avoid explicit 'any' type. Use 'unknown' or proper typing."
 severity: warning
 language: typescript
+ignores:
+  - "**/*.gen.ts"
+  - "**/worker-configuration.d.ts"
 note: |
   `any` disables type checking and defeats the purpose of TypeScript.
   

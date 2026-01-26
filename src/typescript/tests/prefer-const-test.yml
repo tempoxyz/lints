@@ -6,6 +6,12 @@ valid:
     const name = "Alice";
   - |
     const arr = [1, 2, 3];
+  - |
+    for (let i = 0; i < 10; i++) {}
+  - |
+    for (let index = 0; index < arr.length; index += 1) {
+      console.log(arr[index]);
+    }
 
 invalid:
   - |
