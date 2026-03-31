@@ -3,3 +3,5 @@ packages:
 
 ignoredBuiltDependencies:
   - esbuild
+
+minimumReleaseAge: 1440
