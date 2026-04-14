@@ -59,7 +59,7 @@
 	},
 	"dependencies": {
 		"@ast-grep/cli": "^0.40.5",
-		"commander": "^12.1.0"
+		"commander": "^14.0.3"
 	},
 	"engines": {
 		"node": ">=18"
