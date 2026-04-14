@@ -58,7 +58,7 @@
 		"vitest": "^4.1.4"
 	},
 	"dependencies": {
-		"@ast-grep/cli": "^0.40.5",
+		"@ast-grep/cli": "^0.42.1",
 		"commander": "^12.1.0"
 	},
 	"engines": {
