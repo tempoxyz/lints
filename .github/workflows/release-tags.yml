@@ -13,10 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
 
       - name: Configure git
         run: |
@@ -24,10 +25,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Update major version tag
+        env:
+          TAG: ${{ github.event.release.tag_name }}
         run: |
-          # Get the release tag (e.g., v1.2.3)
-          TAG="${{ github.event.release.tag_name }}"
-
           # Extract major version (e.g., v1)
           if [[ $TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
             MAJOR_TAG="v${BASH_REMATCH[1]}"
