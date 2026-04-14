@@ -1,6 +1,9 @@
 packages:
   - "."
 
+blockExoticSubdeps: true
+trustPolicy: no-downgrade
+
 ignoredBuiltDependencies:
   - esbuild
 
