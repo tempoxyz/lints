@@ -48,7 +48,7 @@
 	},
 	"homepage": "https://github.com/tempoxyz/lints#readme",
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.11",
+		"@biomejs/biome": "^2.4.12",
 		"@changesets/cli": "^2.30.0",
 		"@types/node": "^25.6.0",
 		"@typescript/native-preview": "7.0.0-dev.20260122.4",
@@ -58,7 +58,7 @@
 		"vitest": "^4.1.4"
 	},
 	"dependencies": {
-		"@ast-grep/cli": "^0.40.5",
+		"@ast-grep/cli": "^0.42.1",
 		"commander": "^12.1.0"
 	},
 	"engines": {
