@@ -9,9 +9,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# The version PR is opened with a short-lived GitHub App token minted via
+# the github-sts action (authorized by .github/sts/changesets.sts.yaml); the
+# built-in GITHUB_TOKEN is not allowed to create pull requests. It keeps
+# contents: write for the tag push and gh release create in the follow-up
+# step, which the org setting does not affect.
 permissions:
   contents: write
-  pull-requests: write
   id-token: write
 
 jobs:
@@ -43,6 +47,12 @@ jobs:
           pnpm test
           pnpm lint
 
+      - name: Fetch GitHub token via STS
+        id: sts
+        uses: tempoxyz/gh-actions/actions/github-sts@183a02178c660ce295e9a262edc5857cb7135f06 # main
+        with:
+          policy: changesets
+
       - name: Create Release PR or Tag
         id: changesets
         uses: changesets/action@6a0a831ff30acef54f2c6aa1cbbc1096b066edaf # v1.7.0
@@ -52,7 +62,7 @@ jobs:
           commit: "chore: version packages"
           title: "chore: version packages"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.sts.outputs.token }}
 
       - name: Create GitHub Release
         if: steps.changesets.outputs.published == 'true'
