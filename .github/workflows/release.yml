@@ -24,6 +24,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Secure runner
+        uses: tempoxyz/gh-actions/actions/secure-runner@27b9d9cb079918e6be16c8660f82bb0cf7fef6ea
+
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -79,18 +82,18 @@ jobs:
           # Wait for changeset tag to be available
           MAX_ATTEMPTS=10
           SLEEP_SECONDS=2
-          for i in $(seq 1 $MAX_ATTEMPTS); do
+          for i in $(seq 1 "$MAX_ATTEMPTS"); do
             git fetch --tags origin
             if git rev-parse "$CHANGESET_TAG" >/dev/null 2>&1; then
               echo "Changeset tag $CHANGESET_TAG found"
               break
             fi
-            if [ $i -eq $MAX_ATTEMPTS ]; then
+            if [ "$i" -eq "$MAX_ATTEMPTS" ]; then
               echo "Error: Tag $CHANGESET_TAG not found after $MAX_ATTEMPTS attempts"
               exit 1
             fi
             echo "Attempt $i/$MAX_ATTEMPTS: Tag not yet available, waiting..."
-            sleep $SLEEP_SECONDS
+            sleep "$SLEEP_SECONDS"
           done
 
           # Create the vX.Y.Z tag pointing to the same commit
