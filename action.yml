@@ -85,28 +85,34 @@ runs:
       id: run-lint
       shell: bash
       working-directory: ${{ github.workspace }}
+      env:
+        EXCLUDE_RULES: ${{ inputs.exclude-rules }}
+        FIX: ${{ inputs.fix }}
+        LANGUAGE: ${{ inputs.language }}
+        POST_COMMENT: ${{ inputs.post-comment }}
+        SCAN_PATH_INPUT: ${{ inputs.path }}
       run: |
         # Resolve scan path (default to workspace root)
-        SCAN_PATH="${{ inputs.path }}"
+        SCAN_PATH="$SCAN_PATH_INPUT"
         if [ "$SCAN_PATH" = "." ]; then
           SCAN_PATH="${{ github.workspace }}"
         fi
 
         # Build CLI args - use JSON output if PR comment is needed
-        if [ "${{ inputs.post-comment }}" = "true" ] && [ "${{ github.event_name }}" = "pull_request" ]; then
+        if [ "$POST_COMMENT" = "true" ] && [ "${{ github.event_name }}" = "pull_request" ]; then
           OUTPUT_FORMAT="--json"
         else
           OUTPUT_FORMAT="--github-action"
         fi
 
         # Build CLI args array for safe parameter passing
-        CLI_ARGS=("${{ inputs.language }}" "$SCAN_PATH" "$OUTPUT_FORMAT")
+        CLI_ARGS=("$LANGUAGE" "$SCAN_PATH" "$OUTPUT_FORMAT")
 
-        if [ -n "${{ inputs.exclude-rules }}" ]; then
-          CLI_ARGS+=("--exclude" "${{ inputs.exclude-rules }}")
+        if [ -n "$EXCLUDE_RULES" ]; then
+          CLI_ARGS+=("--exclude" "$EXCLUDE_RULES")
         fi
 
-        if [ "${{ inputs.fix }}" = "true" ]; then
+        if [ "$FIX" = "true" ]; then
           CLI_ARGS+=("--fix")
         fi
 
@@ -144,13 +150,13 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
+        LANGUAGE: ${{ inputs.language }}
+        OUTPUT_FILE: ${{ steps.run-lint.outputs.output_file }}
       run: |
         if [ -z "$GITHUB_TOKEN" ]; then
           echo "::warning::github-token is required for posting PR comments"
           exit 0
         fi
-
-        OUTPUT_FILE="${{ steps.run-lint.outputs.output_file }}"
 
         # Validate output file exists
         if [ ! -f "$OUTPUT_FILE" ]; then
@@ -166,13 +172,14 @@ runs:
           "$TOTAL_ISSUES" \
           "${{ github.repository }}" \
           "${{ github.event.pull_request.number }}" \
-          "${{ inputs.language }}"
+          "$LANGUAGE"
 
     - name: Check for failures
       if: inputs.fail-on-error == 'true'
       shell: bash
+      env:
+        EXIT_CODE: ${{ steps.run-lint.outputs.exit_code }}
       run: |
-        EXIT_CODE="${{ steps.run-lint.outputs.exit_code }}"
         if [ "$EXIT_CODE" != "0" ]; then
           echo "::error::Lint errors found. Fix the issues above or set fail-on-error to false."
           exit 1

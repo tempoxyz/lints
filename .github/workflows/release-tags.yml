@@ -6,12 +6,16 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   update-tags:
     name: Update major version tag
     runs-on: ubuntu-latest
     steps:
+      - name: Secure runner
+        uses: tempoxyz/gh-actions/actions/secure-runner@27b9d9cb079918e6be16c8660f82bb0cf7fef6ea
+
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -26,6 +30,7 @@ jobs:
 
       - name: Update major version tag
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.event.release.tag_name }}
         run: |
           # Extract major version (e.g., v1)
@@ -65,5 +70,3 @@ jobs:
             echo "Tag $TAG does not match expected format (vX.Y.Z)"
             exit 1
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
